@@ -1,0 +1,30 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ titre }}{% endblock %}
+{% block page_title %}{{ titre }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+  <a href="javascript:history.back()" class="text-muted text-decoration-none small">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+<div class="card" style="max-width:680px">
+  <div class="card-header">{{ titre }}</div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold small">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+        {% if field.help_text %}<div class="text-muted small mt-1">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-2 mt-4 pt-3 border-top">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

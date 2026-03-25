@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ produit.nom }}{% endblock %}
+{% block page_title %}{{ produit.nom }}{% endblock %}
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+  <a href="{% url 'produits:liste' %}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Produits</a>
+  <div class="d-flex gap-2">
+    <a href="{% url 'produits:mouvement' produit.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-arrow-left-right me-1"></i>Mouvement</a>
+    <a href="{% url 'produits:modifier' produit.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">Informations</div>
+      <div class="card-body">
+        <dl class="row small mb-0">
+          <dt class="col-5 text-muted">Code</dt><dd class="col-7"><code>{{ produit.code }}</code></dd>
+          <dt class="col-5 text-muted">Catégorie</dt><dd class="col-7">{{ produit.categorie|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Fournisseur</dt><dd class="col-7">{{ produit.fournisseur_principal|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Prix achat</dt><dd class="col-7">{{ produit.prix_achat }} DH</dd>
+          <dt class="col-5 text-muted">Prix vente HT</dt><dd class="col-7">{{ produit.prix_vente }} DH</dd>
+          <dt class="col-5 text-muted">TVA</dt><dd class="col-7">{{ produit.tva }}%</dd>
+          <dt class="col-5 text-muted">Emplacement</dt><dd class="col-7">{{ produit.emplacement|default:"—" }}</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="card text-center {% if produit.is_stock_bas %}border-danger{% endif %}">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Stock actuel</div>
+        <div class="display-5 fw-bold {% if produit.is_stock_bas %}text-danger{% else %}text-success{% endif %}">{{ produit.stock_actuel }}</div>
+        <div class="text-muted small">{{ produit.unite }} · min {{ produit.stock_minimum }} · max {{ produit.stock_maximum }}</div>
+        {% if produit.is_stock_bas %}<span class="badge bg-danger mt-2">Stock bas!</span>{% endif %}
+        <div class="mt-2 text-muted small">Valeur: <strong>{{ produit.valeur_stock|floatformat:0 }} DH</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">Historique des mouvements</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Type</th><th>Qté</th><th>Avant</th><th>Après</th><th>Motif</th><th>Réf.</th><th>Par</th><th>Date</th></tr></thead>
+          <tbody>
+          {% for m in mouvements %}
+          <tr>
+            <td><span class="badge badge-{{ m.type_mouvement }}">{{ m.get_type_mouvement_display }}</span></td>
+            <td><strong>{{ m.quantite }}</strong></td>
+            <td class="text-muted">{{ m.stock_avant }}</td>
+            <td class="text-muted">{{ m.stock_apres }}</td>
+            <td><small>{{ m.motif|default:"—"|truncatechars:20 }}</small></td>
+            <td><small class="text-muted">{{ m.reference|default:"—" }}</small></td>
+            <td><small class="text-muted">{{ m.utilisateur.username|default:"—" }}</small></td>
+            <td><small class="text-muted">{{ m.created_at|date:"d/m/Y H:i" }}</small></td>
+          </tr>
+          {% empty %}<tr><td colspan="8" class="text-center text-muted py-3">Aucun mouvement</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

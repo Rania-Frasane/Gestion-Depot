@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+{% block title %}Employés{% endblock %}{% block page_title %}Employés{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="fw-bold mb-0">Employés</h5>
+  <a href="{% url 'employes:ajouter' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>
+</div>
+<div class="card"><div class="card-body p-0">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Matricule</th><th>Nom complet</th><th>Poste</th><th>Email</th><th>Téléphone</th><th>Embauche</th><th></th></tr></thead>
+    <tbody>
+    {% for e in employes %}
+    <tr>
+      <td><code class="text-muted">{{ e.matricule }}</code></td>
+      <td><a href="{% url 'employes:detail' e.pk %}" class="text-decoration-none fw-semibold">{{ e.nom_complet }}</a></td>
+      <td><small>{{ e.poste|default:"—" }}</small></td>
+      <td><small>{{ e.email|default:"—" }}</small></td>
+      <td>{{ e.telephone|default:"—" }}</td>
+      <td>{{ e.date_embauche|date:"d/m/Y" }}</td>
+      <td>
+        <a href="{% url 'employes:modifier' e.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-1"><i class="bi bi-pencil"></i></a>
+        <a href="{% url 'employes:supprimer' e.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aucun employé</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

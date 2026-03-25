@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ employe.nom_complet }}{% endblock %}{% block page_title %}{{ employe.nom_complet }}{% endblock %}
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+  <a href="{% url 'employes:liste' %}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Employés</a>
+  <a href="{% url 'employes:modifier' employe.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+</div>
+<div class="card" style="max-width:520px">
+  <div class="card-header">Informations</div>
+  <div class="card-body">
+    <dl class="row small mb-0">
+      <dt class="col-5 text-muted">Matricule</dt><dd class="col-7"><code>{{ employe.matricule }}</code></dd>
+      <dt class="col-5 text-muted">Poste</dt><dd class="col-7">{{ employe.poste|default:"—" }}</dd>
+      <dt class="col-5 text-muted">Email</dt><dd class="col-7">{{ employe.email|default:"—" }}</dd>
+      <dt class="col-5 text-muted">Téléphone</dt><dd class="col-7">{{ employe.telephone|default:"—" }}</dd>
+      <dt class="col-5 text-muted">CIN</dt><dd class="col-7">{{ employe.cin|default:"—" }}</dd>
+      <dt class="col-5 text-muted">Date embauche</dt><dd class="col-7">{{ employe.date_embauche|date:"d/m/Y" }}</dd>
+      <dt class="col-5 text-muted">Salaire</dt><dd class="col-7">{{ employe.salaire|floatformat:0 }} DH</dd>
+      <dt class="col-5 text-muted">Compte user</dt><dd class="col-7">{{ employe.user|default:"—" }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

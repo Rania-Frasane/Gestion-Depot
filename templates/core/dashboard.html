@@ -1,0 +1,119 @@
+{% extends 'core/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">Vue d'ensemble</h5>
+    <a href="{% url 'produits:ajouter' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i>Nouveau produit
+    </a>
+</div>
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="label"><i class="bi bi-box-seam me-1"></i>Produits</div>
+            <div class="value text-primary">{{ total_produits }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="label"><i class="bi bi-exclamation-triangle me-1"></i>Stock bas</div>
+            <div class="value text-danger">{{ stock_bas }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="label"><i class="bi bi-currency-dollar me-1"></i>Valeur stock</div>
+            <div class="value text-success" style="font-size:1.2rem">{{ valeur_stock|floatformat:0 }} DH</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="label"><i class="bi bi-people me-1"></i>Clients actifs</div>
+            <div class="value text-info">{{ total_clients }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Derniers mouvements -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span>Derniers mouvements</span>
+                <a href="{% url 'rapports:mouvements' %}" class="text-decoration-none small text-muted">Tout voir →</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Produit</th><th>Type</th><th>Qté</th><th>Par</th><th>Date</th></tr></thead>
+                    <tbody>
+                    {% for m in derniers_mouvements %}
+                    <tr>
+                        <td><a href="{% url 'produits:detail' m.produit.pk %}" class="text-decoration-none">{{ m.produit.nom|truncatechars:25 }}</a></td>
+                        <td><span class="badge badge-{{ m.type_mouvement }} px-2 py-1">{{ m.get_type_mouvement_display }}</span></td>
+                        <td><strong>{{ m.quantite }}</strong></td>
+                        <td class="text-muted">{{ m.utilisateur.username|default:"-" }}</td>
+                        <td class="text-muted">{{ m.created_at|date:"d/m H:i" }}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">Aucun mouvement</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Côté droit -->
+    <div class="col-lg-5">
+        <!-- Alertes stock bas -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between">
+                <span class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Stock bas</span>
+                <a href="{% url 'alertes:liste' %}?lue=0" class="text-decoration-none small text-muted">
+                    {% if alertes_count %}{{ alertes_count }} alerte{{ alertes_count|pluralize }}{% endif %} →
+                </a>
+            </div>
+            <div class="card-body p-2">
+                {% for p in produits_bas %}
+                <div class="d-flex justify-content-between align-items-center p-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div>
+                        <div class="fw-semibold" style="font-size:13px">{{ p.nom|truncatechars:28 }}</div>
+                        <div class="text-muted" style="font-size:11px">{{ p.code }} · {{ p.categorie|default:"—" }}</div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-danger">{{ p.stock_actuel }}</span>
+                        <div class="text-muted" style="font-size:11px">min: {{ p.stock_minimum }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center mb-0 py-2 small">Aucune alerte de stock</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Dernières commandes -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span>Dernières commandes</span>
+                <a href="{% url 'commandes:liste' %}" class="text-decoration-none small text-muted">Tout voir →</a>
+            </div>
+            <div class="card-body p-2">
+                {% for cmd in dernieres_commandes %}
+                <div class="d-flex justify-content-between align-items-center p-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div>
+                        <a href="{% url 'commandes:detail' cmd.pk %}" class="text-decoration-none fw-semibold" style="font-size:13px">{{ cmd.numero }}</a>
+                        <div class="text-muted" style="font-size:11px">{{ cmd.fournisseur|default:cmd.client|default:"—" }}</div>
+                    </div>
+                    <span class="badge badge-{{ cmd.statut }} px-2">{{ cmd.get_statut_display }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center mb-0 py-2 small">Aucune commande</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

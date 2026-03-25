@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% block title %}Factures{% endblock %}{% block page_title %}Facturation{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="fw-bold mb-0">Factures</h5>
+  <a href="{% url 'facturation:ajouter' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nouvelle facture</a>
+</div>
+<div class="card mb-3"><div class="card-body py-2">
+  <form method="get" class="d-flex gap-2">
+    <select name="statut" class="form-select form-select-sm" style="max-width:150px">
+      <option value="">Tous statuts</option>
+      {% for v,l in statuts %}<option value="{{ v }}" {% if statut == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrer</button>
+  </form>
+</div></div>
+<div class="card"><div class="card-body p-0">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>N°</th><th>Client</th><th>Statut</th><th>Total TTC</th><th>Émise le</th><th>Échéance</th><th></th></tr></thead>
+    <tbody>
+    {% for f in factures %}
+    <tr>
+      <td><a href="{% url 'facturation:detail' f.pk %}" class="text-decoration-none fw-semibold">{{ f.numero }}</a></td>
+      <td>{{ f.client }}</td>
+      <td><span class="badge badge-{{ f.statut }}">{{ f.get_statut_display }}</span></td>
+      <td class="fw-semibold">{{ f.total_apres_remise|floatformat:2 }} DH</td>
+      <td>{{ f.date_emission|date:"d/m/Y" }}</td>
+      <td>{{ f.date_echeance|date:"d/m/Y"|default:"—" }}</td>
+      <td>
+        <a href="{% url 'facturation:imprimer' f.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-1" target="_blank"><i class="bi bi-printer"></i></a>
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aucune facture</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

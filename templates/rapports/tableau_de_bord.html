@@ -1,0 +1,48 @@
+{% extends 'core/base.html' %}
+{% block title %}Rapports{% endblock %}{% block page_title %}Rapports & Statistiques{% endblock %}
+{% block extra_css %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Valeur totale stock</div><div class="value text-success" style="font-size:1.1rem">{{ valeur_stock|floatformat:0 }} DH</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Produits actifs</div><div class="value text-primary">{{ total_produits }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Clients actifs</div><div class="value text-info">{{ total_clients }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Fournisseurs actifs</div><div class="value text-warning">{{ total_fournisseurs }}</div></div></div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-md-8">
+    <div class="card"><div class="card-header">Évolution des mouvements (30 jours)</div>
+    <div class="card-body"><canvas id="chartMvt" height="100"></canvas></div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-header">Top 10 produits mouvementés</div>
+    <div class="card-body p-0">
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Produit</th><th class="text-end">Qté</th></tr></thead>
+        <tbody>
+        {% for p in top_produits %}
+        <tr><td><small>{{ p.produit__nom|truncatechars:28 }}</small></td><td class="text-end fw-bold">{{ p.total }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div></div>
+  </div>
+</div>
+<div class="d-flex gap-2">
+  <a href="{% url 'rapports:stock' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-box-seam me-1"></i>Rapport stock</a>
+  <a href="{% url 'rapports:mouvements' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left-right me-1"></i>Rapport mouvements</a>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+new Chart(document.getElementById('chartMvt'), {
+  type: 'line',
+  data: {
+    labels: {{ evol_labels|safe }},
+    datasets: [
+      {label:'Entrées',data:{{ evol_entrees|safe }},borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',tension:.3,fill:true},
+      {label:'Sorties',data:{{ evol_sorties|safe }},borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',tension:.3,fill:true}
+    ]
+  },
+  options:{plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}
+});
+</script>{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'core/base.html' %}
+{% block title %}Mouvement stock{% endblock %}
+{% block page_title %}Mouvement de stock{% endblock %}
+{% block content %}
+<div class="mb-3"><a href="{% url 'produits:detail' produit.pk %}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Retour</a></div>
+<div class="card" style="max-width:440px">
+  <div class="card-header">
+    Mouvement — <strong>{{ produit.nom }}</strong>
+    <span class="ms-2 badge {% if produit.is_stock_bas %}bg-danger{% else %}bg-success{% endif %}">{{ produit.stock_actuel }} {{ produit.unite }}</span>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-danger small">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-2 mt-3 pt-3 border-top">
+        <button type="submit" class="btn btn-primary">Valider</button>
+        <a href="{% url 'produits:detail' produit.pk %}" class="btn btn-outline-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

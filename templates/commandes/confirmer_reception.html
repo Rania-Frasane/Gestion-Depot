@@ -1,0 +1,12 @@
+{% extends 'core/base.html' %}
+{% block title %}Réceptionner{% endblock %}{% block page_title %}Réceptionner la commande{% endblock %}
+{% block content %}
+<div class="card border-success" style="max-width:480px"><div class="card-body">
+  <h6 class="fw-semibold mb-2">Confirmer la réception de {{ commande.numero }}</h6>
+  <p class="text-muted small">Ceci va créer des mouvements d'entrée en stock pour toutes les lignes.</p>
+  <form method="post" class="d-flex gap-2">{% csrf_token %}
+    <button type="submit" class="btn btn-success btn-sm">Confirmer réception</button>
+    <a href="{% url 'commandes:detail' commande.pk %}" class="btn btn-outline-secondary btn-sm">Annuler</a>
+  </form>
+</div></div>
+{% endblock %}

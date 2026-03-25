@@ -1,0 +1,47 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ client.nom_complet }}{% endblock %}{% block page_title %}{{ client.nom_complet }}{% endblock %}
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+  <a href="{% url 'clients:liste' %}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Clients</a>
+  <a href="{% url 'clients:modifier' client.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Informations</div>
+      <div class="card-body">
+        <dl class="row small mb-0">
+          <dt class="col-5 text-muted">Code</dt><dd class="col-7"><code>{{ client.code }}</code></dd>
+          <dt class="col-5 text-muted">Type</dt><dd class="col-7">{{ client.get_type_client_display }}</dd>
+          <dt class="col-5 text-muted">Email</dt><dd class="col-7">{{ client.email|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Téléphone</dt><dd class="col-7">{{ client.telephone|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Ville</dt><dd class="col-7">{{ client.ville|default:"—" }}</dd>
+          <dt class="col-5 text-muted">ICE</dt><dd class="col-7">{{ client.ice|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Remise hab.</dt><dd class="col-7">{{ client.remise_habituelle }}%</dd>
+          <dt class="col-5 text-muted">Plafond crédit</dt><dd class="col-7">{{ client.plafond_credit|floatformat:0 }} DH</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">Dernières commandes</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>N°</th><th>Statut</th><th>Date</th><th>Total TTC</th></tr></thead>
+          <tbody>
+          {% for cmd in commandes %}
+          <tr>
+            <td><a href="{% url 'commandes:detail' cmd.pk %}" class="text-decoration-none">{{ cmd.numero }}</a></td>
+            <td><span class="badge badge-{{ cmd.statut }}">{{ cmd.get_statut_display }}</span></td>
+            <td>{{ cmd.date_commande|date:"d/m/Y" }}</td>
+            <td>{{ cmd.total_ttc|floatformat:2 }} DH</td>
+          </tr>
+          {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">Aucune commande</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

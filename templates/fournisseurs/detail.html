@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ fournisseur.nom }}{% endblock %}{% block page_title %}{{ fournisseur.nom }}{% endblock %}
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+  <a href="{% url 'fournisseurs:liste' %}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Fournisseurs</a>
+  <a href="{% url 'fournisseurs:modifier' fournisseur.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+</div>
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">Informations</div>
+      <div class="card-body">
+        <dl class="row small mb-0">
+          <dt class="col-5 text-muted">Code</dt><dd class="col-7"><code>{{ fournisseur.code }}</code></dd>
+          <dt class="col-5 text-muted">Email</dt><dd class="col-7">{{ fournisseur.email|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Téléphone</dt><dd class="col-7">{{ fournisseur.telephone|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Ville</dt><dd class="col-7">{{ fournisseur.ville|default:"—" }}</dd>
+          <dt class="col-5 text-muted">ICE</dt><dd class="col-7">{{ fournisseur.ice|default:"—" }}</dd>
+          <dt class="col-5 text-muted">Délai livraison</dt><dd class="col-7">{{ fournisseur.delai_livraison }} jours</dd>
+          <dt class="col-5 text-muted">Paiement</dt><dd class="col-7">{{ fournisseur.conditions_paiement|default:"—" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">Produits associés ({{ produits.count }})</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Code</th><th>Nom</th><th>Stock</th><th>Prix achat</th></tr></thead>
+          <tbody>
+          {% for p in produits %}
+          <tr>
+            <td><code class="text-muted">{{ p.code }}</code></td>
+            <td><a href="{% url 'produits:detail' p.pk %}" class="text-decoration-none">{{ p.nom }}</a></td>
+            <td class="{% if p.is_stock_bas %}text-danger fw-bold{% endif %}">{{ p.stock_actuel }} {{ p.unite }}</td>
+            <td>{{ p.prix_achat }} DH</td>
+          </tr>
+          {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">Aucun produit</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

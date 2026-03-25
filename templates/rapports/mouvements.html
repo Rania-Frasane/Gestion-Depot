@@ -1,0 +1,32 @@
+{% extends 'core/base.html' %}
+{% block title %}Rapport mouvements{% endblock %}{% block page_title %}Rapport mouvements{% endblock %}
+{% block content %}
+<div class="card mb-3"><div class="card-body py-2">
+  <form method="get" class="d-flex gap-2 align-items-center">
+    <label class="small text-muted">Du</label>
+    <input type="date" name="debut" value="{{ debut }}" class="form-control form-control-sm" style="max-width:150px">
+    <label class="small text-muted">au</label>
+    <input type="date" name="fin" value="{{ fin }}" class="form-control form-control-sm" style="max-width:150px">
+    <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrer</button>
+  </form>
+</div></div>
+<div class="card"><div class="card-body p-0">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Date</th><th>Produit</th><th>Type</th><th>Qté</th><th>Avant</th><th>Après</th><th>Motif</th><th>Par</th></tr></thead>
+    <tbody>
+    {% for m in mouvements %}
+    <tr>
+      <td><small>{{ m.created_at|date:"d/m/Y H:i" }}</small></td>
+      <td><a href="{% url 'produits:detail' m.produit.pk %}" class="text-decoration-none small">{{ m.produit.nom|truncatechars:25 }}</a></td>
+      <td><span class="badge badge-{{ m.type_mouvement }}">{{ m.get_type_mouvement_display }}</span></td>
+      <td><strong>{{ m.quantite }}</strong></td>
+      <td class="text-muted">{{ m.stock_avant }}</td>
+      <td class="text-muted">{{ m.stock_apres }}</td>
+      <td><small>{{ m.motif|default:"—"|truncatechars:20 }}</small></td>
+      <td><small class="text-muted">{{ m.utilisateur.username|default:"—" }}</small></td>
+    </tr>
+    {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">Aucun mouvement sur cette période</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

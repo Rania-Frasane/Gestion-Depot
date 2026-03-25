@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ commande.numero }}{% endblock %}{% block page_title %}{{ commande.numero }}{% endblock %}
+{% block content %}
+<div class="mb-3 d-flex justify-content-between align-items-center">
+  <a href="{% url 'commandes:liste' %}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Commandes</a>
+  <div class="d-flex gap-2">
+    {% if commande.statut == 'brouillon' %}<a href="{% url 'commandes:modifier' commande.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>{% endif %}
+    {% if commande.statut == 'en_cours' and commande.type_commande == 'achat' %}
+    <a href="{% url 'commandes:recevoir' commande.pk %}" class="btn btn-success btn-sm"><i class="bi bi-check2-circle me-1"></i>Réceptionner</a>
+    {% endif %}
+  </div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Lignes de commande</span>
+        {% if commande.statut == 'brouillon' %}
+        <a href="{% url 'commandes:ajouter_ligne' commande.pk %}" class="btn btn-sm btn-outline-primary py-0"><i class="bi bi-plus"></i> Ligne</a>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Produit</th><th>Qté</th><th>Prix unit.</th><th>TVA</th><th>Total HT</th><th>Total TTC</th>{% if commande.statut == 'brouillon' %}<th></th>{% endif %}</tr></thead>
+          <tbody>
+          {% for l in lignes %}
+          <tr>
+            <td>{{ l.produit.nom }}</td>
+            <td>{{ l.quantite }}</td>
+            <td>{{ l.prix_unitaire }} DH</td>
+            <td>{{ l.tva }}%</td>
+            <td>{{ l.total_ht|floatformat:2 }} DH</td>
+            <td class="fw-semibold">{{ l.total_ttc|floatformat:2 }} DH</td>
+            {% if commande.statut == 'brouillon' %}
+            <td><a href="{% url 'commandes:supprimer_ligne' commande.pk l.pk %}" class="text-danger small" onclick="return confirm('Supprimer?')"><i class="bi bi-trash"></i></a></td>
+            {% endif %}
+          </tr>
+          {% empty %}<tr><td colspan="7" class="text-center text-muted py-3">Aucune ligne</td></tr>{% endfor %}
+          </tbody>
+          <tfoot class="table-light">
+            <tr><td colspan="4" class="text-end fw-semibold">Total TTC:</td><td colspan="2" class="fw-bold">{{ commande.total_ttc|floatformat:2 }} DH</td>{% if commande.statut == 'brouillon' %}<td></td>{% endif %}</tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Détails</div>
+      <div class="card-body">
+        <dl class="row small mb-0">
+          <dt class="col-6 text-muted">Statut</dt><dd class="col-6"><span class="badge badge-{{ commande.statut }}">{{ commande.get_statut_display }}</span></dd>
+          <dt class="col-6 text-muted">Type</dt><dd class="col-6">{{ commande.get_type_commande_display }}</dd>
+          <dt class="col-6 text-muted">Fournisseur</dt><dd class="col-6">{{ commande.fournisseur|default:"—" }}</dd>
+          <dt class="col-6 text-muted">Client</dt><dd class="col-6">{{ commande.client|default:"—" }}</dd>
+          <dt class="col-6 text-muted">Date commande</dt><dd class="col-6">{{ commande.date_commande|date:"d/m/Y" }}</dd>
+          <dt class="col-6 text-muted">Livraison prévue</dt><dd class="col-6">{{ commande.date_livraison_prevue|date:"d/m/Y"|default:"—" }}</dd>
+          {% if commande.date_livraison_reelle %}<dt class="col-6 text-muted">Livrée le</dt><dd class="col-6">{{ commande.date_livraison_reelle|date:"d/m/Y" }}</dd>{% endif %}
+          <dt class="col-6 text-muted">Remise</dt><dd class="col-6">{{ commande.remise }}%</dd>
+        </dl>
+        {% if commande.note %}<div class="mt-2 p-2 bg-light rounded small">{{ commande.note }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

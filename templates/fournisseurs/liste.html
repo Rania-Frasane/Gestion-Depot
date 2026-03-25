@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+{% block title %}Fournisseurs{% endblock %}{% block page_title %}Fournisseurs{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="fw-bold mb-0">Fournisseurs</h5>
+  <a href="{% url 'fournisseurs:ajouter' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>
+</div>
+<div class="card mb-3"><div class="card-body py-2">
+  <form method="get" class="d-flex gap-2">
+    <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" style="max-width:260px" placeholder="Nom, email, ville...">
+    <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrer</button>
+  </form>
+</div></div>
+<div class="card"><div class="card-body p-0">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Code</th><th>Nom</th><th>Contact</th><th>Téléphone</th><th>Ville</th><th>Délai</th><th></th></tr></thead>
+    <tbody>
+    {% for f in fournisseurs %}
+    <tr>
+      <td><code class="text-muted">{{ f.code }}</code></td>
+      <td><a href="{% url 'fournisseurs:detail' f.pk %}" class="text-decoration-none fw-semibold">{{ f.nom }}</a></td>
+      <td><small class="text-muted">{{ f.contact_nom|default:"—" }}</small></td>
+      <td>{{ f.telephone|default:"—" }}</td>
+      <td>{{ f.ville|default:"—" }}</td>
+      <td>{{ f.delai_livraison }}j</td>
+      <td>
+        <a href="{% url 'fournisseurs:modifier' f.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-1"><i class="bi bi-pencil"></i></a>
+        <a href="{% url 'fournisseurs:supprimer' f.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aucun fournisseur</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}
