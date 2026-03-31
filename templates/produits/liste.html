@@ -1,83 +1,208 @@
 {% extends 'core/base.html' %}
 {% block title %}Produits{% endblock %}
 {% block page_title %}Produits{% endblock %}
+{% block page_description %}Gérez tous vos produits et stocks{% endblock %}
 {% block content %}
 
+{% include 'components/shadcn-table-styles.html' %}
+{% include 'components/buttons.html' %}
+{% include 'components/delete-modal.html' %}
+
 <div class="space-y-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Produits</h1>
-    <button onclick="modalManager.open('addProductModal')" 
-            class="btn-primary flex items-center gap-2">
+  <!-- Header with Actions -->
+  <div class="flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Produits</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total: <strong>{{ produits.paginator.count }}</strong> produits</p>
+    </div>
+    <button onclick="openAddProductForm()" 
+            class="btn btn-primary btn-md">
       <i class="bi bi-plus-lg"></i> Ajouter Produit
     </button>
   </div>
 
-  <!-- Search & Filter -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-    <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div>
-        <label class="form-label">Recherche</label>
-        <input type="text" name="q" value="{{ q }}" 
-               class="form-input" placeholder="Nom, code...">
-      </div>
+  <!-- Search & Filters Card -->
+  <div class="table-container">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <form method="get" id="filterForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Search Input -->
+        <div class="search-wrapper">
+          <input type="text" name="q" value="{{ q }}" 
+                 placeholder="Rechercher par nom, code..." 
+                 class="search-input">
+        </div>
 
-      <div>
-        <label class="form-label">Catégorie</label>
-        <select name="categorie" class="form-input">
-          <option value="">Toutes catégories</option>
-          {% for c in categories %}
-            <option value="{{ c.pk }}" {% if cat == c.pk|stringformat:"s" %}selected{% endif %}>
-              {{ c.nom }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
+        <!-- Category Filter -->
+        <div>
+          <select name="categorie" onchange="document.getElementById('filterForm').submit()" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Toutes catégories</option>
+            {% for c in categories %}
+              <option value="{{ c.pk }}" {% if cat == c.pk|stringformat:"s" %}selected{% endif %}>
+                {{ c.nom }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
 
-      <div>
-        <label class="form-label">Stock</label>
-        <select name="stock" class="form-input">
-          <option value="">Tout stock</option>
-          <option value="bas" {% if stock_filtre == 'bas' %}selected{% endif %}>Stock bas</option>
-          <option value="ok" {% if stock_filtre == 'ok' %}selected{% endif %}>Stock OK</option>
-        </select>
-      </div>
+        <!-- Stock Filter -->
+        <div>
+          <select name="stock" onchange="document.getElementById('filterForm').submit()" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Tout stock</option>
+            <option value="bas" {% if stock_filtre == 'bas' %}selected{% endif %}>Stock bas</option>
+            <option value="ok" {% if stock_filtre == 'ok' %}selected{% endif %}>Stock OK</option>
+            <option value="critique" {% if stock_filtre == 'critique' %}selected{% endif %}>Stock critique</option>
+          </select>
+        </div>
 
-      <div class="flex gap-2 items-end">
-        <button type="submit" class="btn-primary flex-1">
-          <i class="bi bi-search"></i> Filtrer
-        </button>
-        {% if q or cat or stock_filtre %}
-          <a href="{% url 'produits:liste' %}" class="btn-secondary flex-1">
-            <i class="bi bi-x-lg"></i> Effacer
-          </a>
-        {% endif %}
-      </div>
-    </form>
-  </div>
+        <!-- Actions -->
+        <div class="flex gap-2">
+          <button type="submit" class="btn btn-primary btn-md flex-1">
+            <i class="bi bi-search"></i> Filtrer
+          </button>
+          {% if q or cat or stock_filtre %}
+            <a href="{% url 'produits:liste' %}" class="btn btn-secondary btn-md flex-1">
+              <i class="bi bi-x-circle"></i>
+            </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
 
-  <!-- Products Table -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-    {% if produits %}
-      <div class="overflow-x-auto">
-        <table class="w-full">
+    <!-- Table -->
+    <div class="table-content">
+      {% if produits %}
+        <table>
           <thead>
-            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Code</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Nom</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Catégorie</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Stock</th>
-              <th class="text-right px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Prix vente</th>
-              <th class="text-right px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Valeur</th>
-              <th class="text-center px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+            <tr>
+              <th class="sortable" onclick="sortTable('code')">
+                Code <span class="sort-indicator">↑↓</span>
+              </th>
+              <th class="sortable" onclick="sortTable('nom')">
+                Nom <span class="sort-indicator">↑↓</span>
+              </th>
+              <th class="sortable">
+                Catégorie
+              </th>
+              <th class="sortable" onclick="sortTable('stock')">
+                Stock <span class="sort-indicator">↑↓</span>
+              </th>
+              <th>Prix Vente</th>
+              <th>Valeur Stock</th>
+              <th style="text-align: center;">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody>
             {% for p in produits %}
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors {% if p.is_stock_bas %}bg-yellow-50 dark:bg-yellow-900/20{% endif %}">
-                <td class="px-6 py-4">
+              <tr class="{% if p.is_stock_bas %}bg-yellow-50/50 dark:bg-yellow-900/20{% endif %}">
+                <td>
                   <code class="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                     {{ p.code }}
+                  </code>
+                </td>
+                <td>
+                  <a href="{% url 'produits:detail' p.pk %}" 
+                     class="font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                    {{ p.nom }}
+                  </a>
+                </td>
+                <td>
+                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ p.categorie|default:"—" }}
+                  </span>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold {% if p.stock_actuel <= p.stock_minimum %}text-red-600 dark:text-red-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                      {{ p.stock_actuel }}
+                    </span>
+                    {% if p.is_stock_bas %}
+                      <span class="badge badge-warning">Bas</span>
+                    {% elif p.stock_actuel == 0 %}
+                      <span class="badge badge-danger">Critique</span>
+                    {% else %}
+                      <span class="badge badge-success">OK</span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td class="font-semibold">{{ p.prix_vente }} DH</td>
+                <td class="text-gray-600 dark:text-gray-400">{{ p.valeur_stock|floatformat:0 }} DH</td>
+                <td style="text-align: center;">
+                  <div class="action-buttons">
+                    <button onclick="window.location.href='{% url 'produits:mouvement' p.pk %}'" 
+                            class="action-btn" title="Mouvements">
+                      <i class="bi bi-arrow-left-right text-gray-600"></i>
+                    </button>
+                    <button onclick="openEditProductForm({{ p.pk }})" 
+                            class="action-btn" title="Modifier">
+                      <i class="bi bi-pencil text-gray-600"></i>
+                    </button>
+                    <button onclick="openDeleteModal('{{ p.nom }}', '{% url 'produits:delete' p.pk %}')" 
+                            class="action-btn delete" title="Supprimer">
+                      <i class="bi bi-trash text-gray-600"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <i class="bi bi-inbox"></i>
+          </div>
+          <div class="empty-state-title">Aucun produit trouvé</div>
+          <div class="empty-state-description">
+            {% if q or cat or stock_filtre %}
+              Aucun produit ne correspond à vos critères de recherche.
+            {% else %}
+              Commencez par ajouter votre premier produit.
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if produits.has_other_pages %}
+      <div class="table-footer">
+        <div class="pagination-info">
+          Page <strong>{{ produits.number }}</strong> sur <strong>{{ produits.paginator.num_pages }}</strong> 
+          • <strong>{{ produits.paginator.count }}</strong> total
+        </div>
+        
+        <div class="pagination">
+          {% if produits.has_previous %}
+            <a href="?page=1&q={{ q }}" class="pagination-btn" title="Première page">
+              <i class="bi bi-chevron-double-left"></i>
+            </a>
+            <a href="?page={{ produits.previous_page_number }}&q={{ q }}" class="pagination-btn">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          {% endif %}
+          
+          {% for page_num in produits.paginator.page_range %}
+            {% if page_num == produits.number %}
+              <button class="pagination-btn active">{{ page_num }}</button>
+            {% else %}
+              <a href="?page={{ page_num }}&q={{ q }}" class="pagination-btn">{{ page_num }}</a>
+            {% endif %}
+          {% endfor %}
+          
+          {% if produits.has_next %}
+            <a href="?page={{ produits.next_page_number }}&q={{ q }}" class="pagination-btn">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+            <a href="?page={{ produits.paginator.num_pages }}&q={{ q }}" class="pagination-btn" title="Dernière page">
+              <i class="bi bi-chevron-double-right"></i>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
                   </code>
                 </td>
                 <td class="px-6 py-4">
@@ -106,93 +231,88 @@
                   {{ p.valeur_stock|floatformat:0 }} DH
                 </td>
                 <td class="px-6 py-4">
-                  <div class="flex items-center justify-center gap-2">
-                    <button onclick="window.location.href='{% url 'produits:mouvement' p.pk %}'" 
-                            class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
-                            title="Mouvement">
-                      <i class="bi bi-arrow-left-right"></i>
-                    </button>
-                    <button onclick="modalManager.open('editProductModal{{ p.pk }}')" 
-                            class="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" 
-                            title="Modifier">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button onclick="modalManager.open('deleteProductModal{{ p.pk }}')" 
-                            class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
-                            title="Supprimer">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="7" class="text-center py-12 text-gray-500 dark:text-gray-400">
-                  <i class="bi bi-inbox text-4xl opacity-50 mb-2"></i>
-                  <p class="text-lg">Aucun produit trouvé</p>
+
                 </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
-      </div>
+      {% endif %}
+    </div>
 
-      <!-- Pagination -->
-      {% if produits.has_other_pages %}
-        <div class="flex items-center justify-center gap-2 p-6 border-t border-gray-200 dark:border-gray-700">
+    <!-- Pagination -->
+    {% if produits.has_other_pages %}
+      <div class="table-footer">
+        <div class="pagination-info">
+          Page <strong>{{ produits.number }}</strong> sur <strong>{{ produits.paginator.num_pages }}</strong> 
+          • <strong>{{ produits.paginator.count }}</strong> total
+        </div>
+        
+        <div class="pagination">
           {% if produits.has_previous %}
-            <a href="?page={{ produits.previous_page_number }}&q={{ q }}" 
-               class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <a href="?page=1&q={{ q }}" class="pagination-btn" title="Première page">
+              <i class="bi bi-chevron-double-left"></i>
+            </a>
+            <a href="?page={{ produits.previous_page_number }}&q={{ q }}" class="pagination-btn">
               <i class="bi bi-chevron-left"></i>
             </a>
           {% endif %}
           
-          <span class="text-sm text-gray-600 dark:text-gray-400">
-            Page {{ produits.number }} sur {{ produits.paginator.num_pages }}
-          </span>
+          {% for page_num in produits.paginator.page_range %}
+            {% if page_num == produits.number %}
+              <button class="pagination-btn active">{{ page_num }}</button>
+            {% else %}
+              <a href="?page={{ page_num }}&q={{ q }}" class="pagination-btn">{{ page_num }}</a>
+            {% endif %}
+          {% endfor %}
           
           {% if produits.has_next %}
-            <a href="?page={{ produits.next_page_number }}&q={{ q }}" 
-               class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <a href="?page={{ produits.next_page_number }}&q={{ q }}" class="pagination-btn">
               <i class="bi bi-chevron-right"></i>
+            </a>
+            <a href="?page={{ produits.paginator.num_pages }}&q={{ q }}" class="pagination-btn" title="Dernière page">
+              <i class="bi bi-chevron-double-right"></i>
             </a>
           {% endif %}
         </div>
-      {% endif %}
-    {% else %}
-      <div class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400">Aucun produit disponible</p>
       </div>
     {% endif %}
   </div>
 </div>
 
-<!-- MODALS -->
+<script>
+  function openAddProductForm() {
+    window.location.href = '{% url 'produits:ajouter' %}';
+  }
 
-<!-- Add Product Modal -->
-<div id="addProductModal" class="modal-overlay">
-  <div class="modal-content max-w-2xl">
-    <div class="modal-header">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Ajouter un Produit</h2>
-      <button type="button" onclick="modalManager.close('addProductModal')"
-              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">
-        &times;
-      </button>
-    </div>
-    <div class="modal-body">
-      <p class="text-gray-600 dark:text-gray-300 mb-4">
-        Redirection vers le formulaire d'ajout de produit...
-      </p>
-    </div>
-    <div class="modal-footer">
-      <button type="button" onclick="modalManager.close('addProductModal')" class="btn-secondary">
-        Annuler
-      </button>
-      <a href="{% url 'produits:ajouter' %}" class="btn-primary">
-        Continuer
-      </a>
-    </div>
-  </div>
-</div>
+  function openEditProductForm(productId) {
+    window.location.href = `/produits/${productId}/modifier/`;
+  }
+
+  function openDeleteModal(itemName, deleteUrl) {
+    const modal = document.getElementById('deleteModal');
+    const deleteBtn = document.getElementById('deleteConfirmBtn');
+    const deleteItemName = document.getElementById('deleteItemName');
+    
+    deleteItemName.textContent = itemName;
+    deleteBtn.onclick = function() {
+      fetch(deleteUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok || response.status === 302) {
+          window.location.reload();
+        }
+      })
+      .catch(err => console.error('Delete error:', err));
+    };
+    
+    modal.classList.add('show');
+  }
+</script>
 
 {% endblock %}

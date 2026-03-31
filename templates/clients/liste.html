@@ -1,113 +1,122 @@
 {% extends 'core/base.html' %}
 {% block title %}Clients{% endblock %}
 {% block page_title %}Clients{% endblock %}
+{% block page_description %}Gérez tous vos clients et contacts{% endblock %}
 {% block content %}
 
+{% include 'components/shadcn-table-styles.html' %}
+{% include 'components/buttons.html' %}
+{% include 'components/delete-modal.html' %}
+
 <div class="space-y-6">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Clients</h1>
-    <a href="{% url 'clients:ajouter' %}" class="btn-primary flex items-center gap-2">
+  <!-- Header with Actions -->
+  <div class="flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Clients</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total: <strong>{{ clients_count|default:0 }}</strong> clients</p>
+    </div>
+    <a href="{% url 'clients:ajouter' %}" class="btn btn-primary btn-md">
       <i class="bi bi-plus-lg"></i> Ajouter Client
     </a>
   </div>
 
-  <!-- Search & Filter -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-    <form method="get" class="flex gap-4 flex-wrap">
-      <div class="flex-1 min-w-[250px]">
-        <input type="text" name="q" value="{{ q }}" 
-               class="form-input w-full" 
-               placeholder="Nom, email, code...">
-      </div>
-      <div class="flex gap-2">
-        <button type="submit" class="btn-primary">
-          <i class="bi bi-search"></i> Filtrer
-        </button>
-        {% if q %}
-          <a href="{% url 'clients:liste' %}" class="btn-secondary">
-            <i class="bi bi-x-lg"></i> Effacer
-          </a>
-        {% endif %}
-      </div>
-    </form>
-  </div>
+  <!-- Search & Filter Card -->
+  <div class="table-container">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+      <form method="get" id="filterForm" class="flex gap-4 flex-wrap">
+        <div class="search-wrapper flex-1 min-w-[250px]">
+          <input type="text" name="q" value="{{ q }}" 
+                 placeholder="Rechercher par nom, email, code..." 
+                 class="search-input w-full">
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="btn btn-primary btn-md">
+            <i class="bi bi-search"></i> Filtrer
+          </button>
+          {% if q %}
+            <a href="{% url 'clients:liste' %}" class="btn btn-secondary btn-md">
+              <i class="bi bi-x-circle"></i>
+            </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
 
-  <!-- Clients Table -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-    {% if clients %}
-      <div class="overflow-x-auto">
-        <table class="w-full">
+    <!-- Table -->
+    <div class="table-content">
+      {% if clients %}
+        <table>
           <thead>
-            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Code</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Nom</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Type</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Email</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Téléphone</th>
-              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Ville</th>
-              <th class="text-center px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+            <tr>
+              <th>Code</th>
+              <th>Nom</th>
+              <th>Type</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th>Ville</th>
+              <th style="text-align: center;">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody>
             {% for c in clients %}
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <td class="px-6 py-4">
+              <tr>
+                <td>
                   <code class="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                     {{ c.code }}
                   </code>
                 </td>
-                <td class="px-6 py-4">
+                <td>
                   <a href="{% url 'clients:detail' c.pk %}" 
-                     class="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                     class="font-medium text-blue-600 dark:text-blue-400 hover:underline">
                     {{ c.nom_complet }}
                   </a>
                 </td>
-                <td class="px-6 py-4">
-                  <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                <td>
+                  <span class="badge badge-info">
                     {{ c.get_type_client_display }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                <td class="text-sm text-gray-600 dark:text-gray-400">
                   {{ c.email|default:"—" }}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                <td class="text-sm text-gray-600 dark:text-gray-400">
                   {{ c.telephone|default:"—" }}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                <td class="text-sm text-gray-600 dark:text-gray-400">
                   {{ c.ville|default:"—" }}
                 </td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center justify-center gap-2">
+                <td style="text-align: center;">
+                  <div class="action-buttons">
                     <a href="{% url 'clients:modifier' c.pk %}" 
-                       class="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" 
-                       title="Modifier">
-                      <i class="bi bi-pencil"></i>
+                       class="action-btn" title="Modifier">
+                      <i class="bi bi-pencil text-gray-600"></i>
                     </a>
-                    <a href="{% url 'clients:supprimer' c.pk %}" 
-                       class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
-                       title="Supprimer">
-                      <i class="bi bi-trash"></i>
-                    </a>
+                    <button onclick="openDeleteModal('{{ c.nom_complet }}', '{% url 'clients:supprimer' c.pk %}')" 
+                            class="action-btn delete" title="Supprimer">
+                      <i class="bi bi-trash text-gray-600"></i>
+                    </button>
                   </div>
-                </td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="7" class="text-center py-12 text-gray-500 dark:text-gray-400">
-                  <i class="bi bi-inbox text-4xl opacity-50 mb-2"></i>
-                  <p class="text-lg">Aucun client trouvé</p>
                 </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
-      </div>
-    {% else %}
-      <div class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400">Aucun client disponible</p>
-      </div>
-    {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <i class="bi bi-people"></i>
+          </div>
+          <div class="empty-state-title">Aucun client trouvé</div>
+          <div class="empty-state-description">
+            {% if q %}
+              Aucun client ne correspond à votre recherche.
+            {% else %}
+              Commencez par ajouter votre premier client.
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
   </div>
 </div>
 

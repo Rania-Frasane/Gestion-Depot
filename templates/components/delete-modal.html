@@ -1,0 +1,220 @@
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 invisible transition-all duration-200 pointer-events-none">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full mx-4 overflow-hidden animation scale-in transform translate-y-4">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Delete Item</h2>
+            <button onclick="closeDeleteModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="bi bi-x-lg text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
+                <i class="bi bi-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+            </div>
+            
+            <h3 class="text-center text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Delete <span id="deleteItemName" class="font-bold text-red-600"></span>?
+            </h3>
+            
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+                This action cannot be undone. The item will be permanently deleted from the system.
+            </p>
+
+            <!-- Input Confirmation (optional for important items) -->
+            <div id="deleteConfirmInput" class="mb-6 hidden">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Type <span id="deleteConfirmWord" class="font-bold text-red-600">DELETE</span> to confirm
+                </label>
+                <input 
+                    type="text" 
+                    id="deleteConfirmField"
+                    placeholder="Type to confirm deletion"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <button 
+                onclick="closeDeleteModal()"
+                class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            >
+                Cancel
+            </button>
+            <button 
+                id="deleteConfirmBtn"
+                onclick="confirmDelete()"
+                class="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL STYLES -->
+<style>
+    #deleteModal {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #deleteModal.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    #deleteModal.show > div {
+        animation: modalSlideIn 0.3s ease-out;
+        transform: translateY(0);
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Confirmation input focus */
+    #deleteConfirmField:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+</style>
+
+<!-- DELETE MODAL SCRIPT -->
+<script>
+    let deleteModalConfig = {
+        url: null,
+        method: 'POST',
+        itemName: 'this item',
+        requireConfirmation: false
+    };
+
+    function openDeleteModal(itemName, deleteUrl, requireConfirm = false) {
+        const modal = document.getElementById('deleteModal');
+        const confirmInput = document.getElementById('deleteConfirmInput');
+        const deleteBtn = document.getElementById('deleteConfirmBtn');
+
+        deleteModalConfig.url = deleteUrl;
+        deleteModalConfig.itemName = itemName;
+        deleteModalConfig.requireConfirmation = requireConfirm;
+
+        // Update modal content
+        document.getElementById('deleteItemName').textContent = itemName;
+
+        if (requireConfirm) {
+            confirmInput.classList.remove('hidden');
+            deleteBtn.disabled = true;
+            document.getElementById('deleteConfirmField').value = '';
+        } else {
+            confirmInput.classList.add('hidden');
+            deleteBtn.disabled = false;
+        }
+
+        // Show modal with animation
+        modal.classList.add('show');
+
+        // Focus on input if confirmation required
+        if (requireConfirm) {
+            setTimeout(() => document.getElementById('deleteConfirmField').focus(), 100);
+        }
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('show');
+    }
+
+    function confirmDelete() {
+        const deleteBtn = document.getElementById('deleteConfirmBtn');
+        const confirmField = document.getElementById('deleteConfirmField');
+
+        if (deleteModalConfig.requireConfirmation) {
+            if (confirmField.value.toUpperCase() !== 'DELETE') {
+                confirmField.classList.add('ring-2', 'ring-red-500');
+                setTimeout(() => confirmField.classList.remove('ring-2', 'ring-red-500'), 300);
+                return;
+            }
+        }
+
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i> Deleting...';
+
+        // Send delete request
+        fetch(deleteModalConfig.url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                confirm: true
+            })
+        })
+        .then(response => {
+            if (response.ok || response.status === 302 || response.status === 200) {
+                // Show success message
+                showSuccessToast(`${deleteModalConfig.itemName} deleted successfully`);
+                
+                // Close modal and reload
+                closeDeleteModal();
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                throw new Error('Delete failed');
+            }
+        })
+        .catch(error => {
+            console.error('Delete error:', error);
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = 'Delete';
+            showErrorToast('Failed to delete item. Please try again.');
+        });
+    }
+
+    // Confirmation input validation
+    document.getElementById('deleteConfirmField')?.addEventListener('input', function() {
+        const deleteBtn = document.getElementById('deleteConfirmBtn');
+        deleteBtn.disabled = this.value.toUpperCase() !== 'DELETE';
+    });
+
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('deleteModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Toast notifications
+    function showSuccessToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slideUp z-50';
+        toast.innerHTML = `<i class="bi bi-check-circle"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function showErrorToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slideUp z-50';
+        toast.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+</script>
