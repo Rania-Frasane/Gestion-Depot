@@ -2,60 +2,197 @@
 {% block title %}Produits{% endblock %}
 {% block page_title %}Produits{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="fw-bold mb-0">Produits</h5>
-  <a href="{% url 'produits:ajouter' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>
-</div>
-<div class="card mb-3">
-  <div class="card-body py-2">
-    <form method="get" class="d-flex flex-wrap gap-2">
-      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" style="max-width:220px" placeholder="Nom, code...">
-      <select name="categorie" class="form-select form-select-sm" style="max-width:160px">
-        <option value="">Toutes catégories</option>
-        {% for c in categories %}<option value="{{ c.pk }}" {% if cat == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.nom }}</option>{% endfor %}
-      </select>
-      <select name="stock" class="form-select form-select-sm" style="max-width:130px">
-        <option value="">Tout stock</option>
-        <option value="bas" {% if stock_filtre == 'bas' %}selected{% endif %}>Stock bas</option>
-        <option value="ok" {% if stock_filtre == 'ok' %}selected{% endif %}>Stock OK</option>
-      </select>
-      <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrer</button>
-      {% if q or cat or stock_filtre %}<a href="{% url 'produits:liste' %}" class="btn btn-outline-danger btn-sm">Effacer</a>{% endif %}
+
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Produits</h1>
+    <button onclick="modalManager.open('addProductModal')" 
+            class="btn-primary flex items-center gap-2">
+      <i class="bi bi-plus-lg"></i> Ajouter Produit
+    </button>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <form method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <label class="form-label">Recherche</label>
+        <input type="text" name="q" value="{{ q }}" 
+               class="form-input" placeholder="Nom, code...">
+      </div>
+
+      <div>
+        <label class="form-label">Catégorie</label>
+        <select name="categorie" class="form-input">
+          <option value="">Toutes catégories</option>
+          {% for c in categories %}
+            <option value="{{ c.pk }}" {% if cat == c.pk|stringformat:"s" %}selected{% endif %}>
+              {{ c.nom }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label">Stock</label>
+        <select name="stock" class="form-input">
+          <option value="">Tout stock</option>
+          <option value="bas" {% if stock_filtre == 'bas' %}selected{% endif %}>Stock bas</option>
+          <option value="ok" {% if stock_filtre == 'ok' %}selected{% endif %}>Stock OK</option>
+        </select>
+      </div>
+
+      <div class="flex gap-2 items-end">
+        <button type="submit" class="btn-primary flex-1">
+          <i class="bi bi-search"></i> Filtrer
+        </button>
+        {% if q or cat or stock_filtre %}
+          <a href="{% url 'produits:liste' %}" class="btn-secondary flex-1">
+            <i class="bi bi-x-lg"></i> Effacer
+          </a>
+        {% endif %}
+      </div>
     </form>
   </div>
-</div>
-<div class="card">
-  <div class="card-body p-0">
-    <table class="table table-hover mb-0">
-      <thead><tr><th>Code</th><th>Nom</th><th>Catégorie</th><th>Stock</th><th>Prix vente</th><th>Valeur</th><th></th></tr></thead>
-      <tbody>
-      {% for p in produits %}
-      <tr class="{% if p.is_stock_bas %}table-warning{% endif %}">
-        <td><code class="text-muted">{{ p.code }}</code></td>
-        <td><a href="{% url 'produits:detail' p.pk %}" class="text-decoration-none fw-semibold">{{ p.nom }}</a></td>
-        <td><small class="text-muted">{{ p.categorie|default:"—" }}</small></td>
-        <td>
-          <span class="fw-bold {% if p.is_stock_bas %}text-danger{% else %}text-success{% endif %}">{{ p.stock_actuel }}</span>
-          <small class="text-muted">{{ p.unite }} / min {{ p.stock_minimum }}</small>
-        </td>
-        <td>{{ p.prix_vente }} DH</td>
-        <td><small class="text-muted">{{ p.valeur_stock|floatformat:0 }} DH</small></td>
-        <td>
-          <a href="{% url 'produits:mouvement' p.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1" title="Mouvement"><i class="bi bi-arrow-left-right"></i></a>
-          <a href="{% url 'produits:modifier' p.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-1"><i class="bi bi-pencil"></i></a>
-          <a href="{% url 'produits:supprimer' p.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
-        </td>
-      </tr>
-      {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aucun produit</td></tr>{% endfor %}
-      </tbody>
-    </table>
+
+  <!-- Products Table -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    {% if produits %}
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Code</th>
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Nom</th>
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Catégorie</th>
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Stock</th>
+              <th class="text-right px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Prix vente</th>
+              <th class="text-right px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Valeur</th>
+              <th class="text-center px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for p in produits %}
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors {% if p.is_stock_bas %}bg-yellow-50 dark:bg-yellow-900/20{% endif %}">
+                <td class="px-6 py-4">
+                  <code class="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                    {{ p.code }}
+                  </code>
+                </td>
+                <td class="px-6 py-4">
+                  <a href="{% url 'produits:detail' p.pk %}" 
+                     class="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                    {{ p.nom }}
+                  </a>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  {{ p.categorie|default:"—" }}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex flex-col gap-1">
+                    <span class="font-bold {% if p.is_stock_bas %}text-red-600 dark:text-red-400{% else %}text-green-600 dark:text-green-400{% endif %}">
+                      {{ p.stock_actuel }}
+                    </span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ p.unite }} / min {{ p.stock_minimum }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right font-semibold text-gray-900 dark:text-white">
+                  {{ p.prix_vente }} DH
+                </td>
+                <td class="px-6 py-4 text-right text-sm text-gray-600 dark:text-gray-400">
+                  {{ p.valeur_stock|floatformat:0 }} DH
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center justify-center gap-2">
+                    <button onclick="window.location.href='{% url 'produits:mouvement' p.pk %}'" 
+                            class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                            title="Mouvement">
+                      <i class="bi bi-arrow-left-right"></i>
+                    </button>
+                    <button onclick="modalManager.open('editProductModal{{ p.pk }}')" 
+                            class="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" 
+                            title="Modifier">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button onclick="modalManager.open('deleteProductModal{{ p.pk }}')" 
+                            class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+                            title="Supprimer">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <i class="bi bi-inbox text-4xl opacity-50 mb-2"></i>
+                  <p class="text-lg">Aucun produit trouvé</p>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if produits.has_other_pages %}
+        <div class="flex items-center justify-center gap-2 p-6 border-t border-gray-200 dark:border-gray-700">
+          {% if produits.has_previous %}
+            <a href="?page={{ produits.previous_page_number }}&q={{ q }}" 
+               class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          {% endif %}
+          
+          <span class="text-sm text-gray-600 dark:text-gray-400">
+            Page {{ produits.number }} sur {{ produits.paginator.num_pages }}
+          </span>
+          
+          {% if produits.has_next %}
+            <a href="?page={{ produits.next_page_number }}&q={{ q }}" 
+               class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="text-center py-12">
+        <p class="text-gray-500 dark:text-gray-400">Aucun produit disponible</p>
+      </div>
+    {% endif %}
   </div>
-  {% if produits.has_other_pages %}
-  <div class="card-footer d-flex justify-content-center gap-2">
-    {% if produits.has_previous %}<a href="?page={{ produits.previous_page_number }}&q={{ q }}" class="btn btn-sm btn-outline-secondary">←</a>{% endif %}
-    <span class="btn btn-sm disabled">{{ produits.number }} / {{ produits.paginator.num_pages }}</span>
-    {% if produits.has_next %}<a href="?page={{ produits.next_page_number }}&q={{ q }}" class="btn btn-sm btn-outline-secondary">→</a>{% endif %}
-  </div>
-  {% endif %}
 </div>
+
+<!-- MODALS -->
+
+<!-- Add Product Modal -->
+<div id="addProductModal" class="modal-overlay">
+  <div class="modal-content max-w-2xl">
+    <div class="modal-header">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">Ajouter un Produit</h2>
+      <button type="button" onclick="modalManager.close('addProductModal')"
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="text-gray-600 dark:text-gray-300 mb-4">
+        Redirection vers le formulaire d'ajout de produit...
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" onclick="modalManager.close('addProductModal')" class="btn-secondary">
+        Annuler
+      </button>
+      <a href="{% url 'produits:ajouter' %}" class="btn-primary">
+        Continuer
+      </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

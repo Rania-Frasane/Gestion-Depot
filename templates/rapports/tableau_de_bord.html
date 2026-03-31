@@ -1,48 +1,200 @@
 {% extends 'core/base.html' %}
-{% block title %}Rapports{% endblock %}{% block page_title %}Rapports & Statistiques{% endblock %}
-{% block extra_css %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>{% endblock %}
+{% block title %}Rapports{% endblock %}
+{% block page_title %}Rapports & Statistiques{% endblock %}
 {% block content %}
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Valeur totale stock</div><div class="value text-success" style="font-size:1.1rem">{{ valeur_stock|floatformat:0 }} DH</div></div></div>
-  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Produits actifs</div><div class="value text-primary">{{ total_produits }}</div></div></div>
-  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Clients actifs</div><div class="value text-info">{{ total_clients }}</div></div></div>
-  <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Fournisseurs actifs</div><div class="value text-warning">{{ total_fournisseurs }}</div></div></div>
-</div>
-<div class="row g-3 mb-3">
-  <div class="col-md-8">
-    <div class="card"><div class="card-header">Évolution des mouvements (30 jours)</div>
-    <div class="card-body"><canvas id="chartMvt" height="100"></canvas></div></div>
+
+<div class="space-y-6">
+  <!-- Header -->
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Rapports & Statistiques</h1>
+
+  <!-- Key Metrics -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Stock Value -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Valeur totale stock</p>
+          <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-2">
+            {{ valeur_stock|floatformat:0 }} <span class="text-sm">DH</span>
+          </p>
+        </div>
+        <div class="bg-green-100 dark:bg-green-900/30 rounded-full p-3">
+          <i class="bi bi-box-seam text-green-600 dark:text-green-400 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Products -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Produits actifs</p>
+          <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">{{ total_produits }}</p>
+        </div>
+        <div class="bg-blue-100 dark:bg-blue-900/30 rounded-full p-3">
+          <i class="bi bi-box-seam text-blue-600 dark:text-blue-400 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Clients -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Clients actifs</p>
+          <p class="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">{{ total_clients }}</p>
+        </div>
+        <div class="bg-purple-100 dark:bg-purple-900/30 rounded-full p-3">
+          <i class="bi bi-people text-purple-600 dark:text-purple-400 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Suppliers -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Fournisseurs actifs</p>
+          <p class="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-2">{{ total_fournisseurs }}</p>
+        </div>
+        <div class="bg-orange-100 dark:bg-orange-900/30 rounded-full p-3">
+          <i class="bi bi-truck text-orange-600 dark:text-orange-400 text-2xl"></i>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="col-md-4">
-    <div class="card"><div class="card-header">Top 10 produits mouvementés</div>
-    <div class="card-body p-0">
-      <table class="table table-sm mb-0">
-        <thead><tr><th>Produit</th><th class="text-end">Qté</th></tr></thead>
-        <tbody>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Movement Evolution Chart -->
+    <div class="lg:col-span-2">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">
+          Évolution des mouvements (30 derniers jours)
+        </h2>
+        <div class="relative h-80">
+          <canvas id="chartMvt"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Products -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">
+        Top 10 produits mouvementés
+      </h2>
+      <div class="space-y-2 max-h-80 overflow-y-auto">
         {% for p in top_produits %}
-        <tr><td><small>{{ p.produit__nom|truncatechars:28 }}</small></td><td class="text-end fw-bold">{{ p.total }}</td></tr>
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <span class="text-sm text-gray-700 dark:text-gray-300 truncate">
+              {{ p.produit__nom|truncatechars:28 }}
+            </span>
+            <span class="ml-2 font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded text-sm">
+              {{ p.total }}
+            </span>
+          </div>
+        {% empty %}
+          <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <p class="text-sm">Aucune donnée</p>
+          </div>
         {% endfor %}
-        </tbody>
-      </table>
-    </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Reports -->
+  <div class="flex flex-wrap gap-3">
+    <a href="{% url 'rapports:stock' %}" 
+       class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg font-semibold hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+      <i class="bi bi-box-seam"></i> Rapport Stock
+    </a>
+    <a href="{% url 'rapports:mouvements' %}" 
+       class="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg font-semibold hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+      <i class="bi bi-arrow-left-right"></i> Mouvements
+    </a>
   </div>
 </div>
-<div class="d-flex gap-2">
-  <a href="{% url 'rapports:stock' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-box-seam me-1"></i>Rapport stock</a>
-  <a href="{% url 'rapports:mouvements' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left-right me-1"></i>Rapport mouvements</a>
-</div>
+
 {% endblock %}
+
 {% block extra_js %}
 <script>
-new Chart(document.getElementById('chartMvt'), {
-  type: 'line',
-  data: {
-    labels: {{ evol_labels|safe }},
-    datasets: [
-      {label:'Entrées',data:{{ evol_entrees|safe }},borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.1)',tension:.3,fill:true},
-      {label:'Sorties',data:{{ evol_sorties|safe }},borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',tension:.3,fill:true}
-    ]
-  },
-  options:{plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}
+document.addEventListener('DOMContentLoaded', function() {
+  const isDarkMode = document.documentElement.classList.contains('dark');
+  const textColor = isDarkMode ? '#e5e7eb' : '#374151';
+  const gridColor = isDarkMode ? '#374151' : '#f3f4f6';
+
+  new Chart(document.getElementById('chartMvt'), {
+    type: 'line',
+    data: {
+      labels: {{ evol_labels|safe }},
+      datasets: [
+        {
+          label: 'Entrées',
+          data: {{ evol_entrees|safe }},
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        },
+        {
+          label: 'Sorties',
+          data: {{ evol_sorties|safe }},
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#ef4444',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            color: textColor,
+            padding: 15,
+            font: { size: 13, weight: '500' }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: gridColor,
+            drawBorder: false
+          },
+          ticks: {
+            color: textColor
+          }
+        },
+        x: {
+          grid: {
+            display: false,
+            drawBorder: false
+          },
+          ticks: {
+            color: textColor
+          }
+        }
+      }
+    }
+  });
 });
-</script>{% endblock %}
+</script>
+{% endblock %}

@@ -2,29 +2,129 @@
 {% block title %}{{ titre }}{% endblock %}
 {% block page_title %}{{ titre }}{% endblock %}
 {% block content %}
-<div class="mb-3">
-  <a href="javascript:history.back()" class="text-muted text-decoration-none small">
-    <i class="bi bi-arrow-left me-1"></i>Retour
+
+<div class="max-w-2xl mx-auto space-y-6">
+  <!-- Back Button -->
+  <a href="javascript:history.back()" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+    <i class="bi bi-arrow-left"></i>Retour
   </a>
-</div>
-<div class="card" style="max-width:680px">
-  <div class="card-header">{{ titre }}</div>
-  <div class="card-body">
-    <form method="post" enctype="multipart/form-data">
+
+  <!-- Form Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-700 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ titre }}</h1>
+    </div>
+
+    <!-- Body -->
+    <form method="post" enctype="multipart/form-data" class="p-6">
       {% csrf_token %}
-      {% for field in form %}
-      <div class="mb-3">
-        <label class="form-label fw-semibold small">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
-        {{ field }}
-        {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
-        {% if field.help_text %}<div class="text-muted small mt-1">{{ field.help_text }}</div>{% endif %}
+      
+      <div class="space-y-5">
+        {% for field in form %}
+          <div>
+            <label class="form-label">
+              {{ field.label }}
+              {% if field.field.required %}
+                <span class="text-red-500 font-semibold">*</span>
+              {% endif %}
+            </label>
+
+            <!-- Field Rendering -->
+            <div class="mt-2">
+              {% if field.widget.input_type == "checkbox" %}
+                <div class="flex items-center gap-3">
+                  {{ field }}
+                  <label for="{{ field.id_for_label }}" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                    {{ field.label }}
+                  </label>
+                </div>
+              {% elif field.widget.input_type == "textarea" %}
+                {{ field }}
+              {% elif field.widget.input_type == "select" %}
+                {{ field }}
+              {% elif field.widget.input_type == "radio" %}
+                <div class="space-y-2">
+                  {% for choice_id, choice_label in field.field.choices %}
+                    <label class="flex items-center gap-3 cursor-pointer">
+                      <input type="radio" name="{{ field.name }}" value="{{ choice_id }}" {% if field.value == choice_id %}checked{% endif %} class="form-input">
+                      <span class="text-gray-700 dark:text-gray-300">{{ choice_label }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              {% elif field.widget.input_type == "file" %}
+                {{ field }}
+              {% else %}
+                {{ field }}
+              {% endif %}
+            </div>
+
+            <!-- Errors -->
+            {% if field.errors %}
+              <div class="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p class="text-red-600 dark:text-red-400 text-sm font-medium">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ field.errors.0 }}
+                </p>
+              </div>
+            {% endif %}
+
+            <!-- Help Text -->
+            {% if field.help_text %}
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                {{ field.help_text }}
+              </p>
+            {% endif %}
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-      <div class="d-flex gap-2 mt-4 pt-3 border-top">
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <a href="javascript:history.back()" class="btn btn-outline-secondary">Annuler</a>
+
+      <!-- Form Actions -->
+      <div class="flex gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button type="submit" class="btn-primary">
+          <i class="bi bi-check-lg me-1"></i>Enregistrer
+        </button>
+        <a href="javascript:history.back()" class="btn-secondary">
+          <i class="bi bi-x-lg me-1"></i>Annuler
+        </a>
       </div>
     </form>
   </div>
 </div>
+
+<style>
+  /* Form field global styling */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime"],
+  input[type="time"],
+  input[type="url"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="file"],
+  select,
+  textarea {
+    @apply block w-full px-4 py-2.5 border rounded-lg
+           border-gray-300 dark:border-gray-600
+           bg-white dark:bg-gray-800
+           text-gray-900 dark:text-white
+           placeholder-gray-400 dark:placeholder-gray-500
+           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+           transition-colors text-base;
+  }
+
+  textarea {
+    @apply resize-none min-h-[120px];
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    @apply w-5 h-5 rounded border-gray-300 dark:border-gray-600
+           text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0
+           transition-colors cursor-pointer;
+  }
+</style>
+
 {% endblock %}

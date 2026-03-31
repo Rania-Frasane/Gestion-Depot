@@ -3,117 +3,373 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0">Vue d'ensemble</h5>
-    <a href="{% url 'produits:ajouter' %}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg me-1"></i>Nouveau produit
-    </a>
-</div>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Vue d'ensemble</h1>
+        <button onclick="modalManager.open('addProductModal')" class="btn-primary flex items-center gap-2">
+            <i class="bi bi-plus-lg"></i> Nouveau produit
+        </button>
+    </div>
 
-<!-- Stats row -->
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="label"><i class="bi bi-box-seam me-1"></i>Produits</div>
-            <div class="value text-primary">{{ total_produits }}</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="label"><i class="bi bi-exclamation-triangle me-1"></i>Stock bas</div>
-            <div class="value text-danger">{{ stock_bas }}</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="label"><i class="bi bi-currency-dollar me-1"></i>Valeur stock</div>
-            <div class="value text-success" style="font-size:1.2rem">{{ valeur_stock|floatformat:0 }} DH</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <div class="label"><i class="bi bi-people me-1"></i>Clients actifs</div>
-            <div class="value text-info">{{ total_clients }}</div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3">
-    <!-- Derniers mouvements -->
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between">
-                <span>Derniers mouvements</span>
-                <a href="{% url 'rapports:mouvements' %}" class="text-decoration-none small text-muted">Tout voir →</a>
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead><tr><th>Produit</th><th>Type</th><th>Qté</th><th>Par</th><th>Date</th></tr></thead>
-                    <tbody>
-                    {% for m in derniers_mouvements %}
-                    <tr>
-                        <td><a href="{% url 'produits:detail' m.produit.pk %}" class="text-decoration-none">{{ m.produit.nom|truncatechars:25 }}</a></td>
-                        <td><span class="badge badge-{{ m.type_mouvement }} px-2 py-1">{{ m.get_type_mouvement_display }}</span></td>
-                        <td><strong>{{ m.quantite }}</strong></td>
-                        <td class="text-muted">{{ m.utilisateur.username|default:"-" }}</td>
-                        <td class="text-muted">{{ m.created_at|date:"d/m H:i" }}</td>
-                    </tr>
-                    {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">Aucun mouvement</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Products -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                        <i class="bi bi-box-seam"></i> Produits
+                    </p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">{{ total_produits }}</p>
+                </div>
+                <div class="bg-blue-100 dark:bg-blue-900/30 rounded-full p-3">
+                    <i class="bi bi-box-seam text-blue-600 dark:text-blue-400 text-2xl"></i>
+                </div>
             </div>
         </div>
+
+        <!-- Low Stock -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                        <i class="bi bi-exclamation-triangle"></i> Stock bas
+                    </p>
+                    <p class="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">{{ stock_bas }}</p>
+                </div>
+                <div class="bg-red-100 dark:bg-red-900/30 rounded-full p-3">
+                    <i class="bi bi-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Value -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                        <i class="bi bi-currency-dollar"></i> Valeur stock
+                    </p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-2">{{ valeur_stock|floatformat:0 }} <span class="text-sm">DH</span></p>
+                </div>
+                <div class="bg-green-100 dark:bg-green-900/30 rounded-full p-3">
+                    <i class="bi bi-currency-dollar text-green-600 dark:text-green-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Clients -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm font-medium flex items-center gap-2">
+                        <i class="bi bi-people"></i> Clients
+                    </p>
+                    <p class="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">{{ total_clients }}</p>
+                </div>
+                <div class="bg-purple-100 dark:bg-purple-900/30 rounded-full p-3">
+                    <i class="bi bi-people text-purple-600 dark:text-purple-400 text-2xl"></i>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Côté droit -->
-    <div class="col-lg-5">
-        <!-- Alertes stock bas -->
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between">
-                <span class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Stock bas</span>
-                <a href="{% url 'alertes:liste' %}?lue=0" class="text-decoration-none small text-muted">
-                    {% if alertes_count %}{{ alertes_count }} alerte{{ alertes_count|pluralize }}{% endif %} →
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Stock Distribution Chart -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Distribution du Stock</h2>
+                <a href="{% url 'rapports:dashboard' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    Détails →
                 </a>
             </div>
-            <div class="card-body p-2">
-                {% for p in produits_bas %}
-                <div class="d-flex justify-content-between align-items-center p-2 {% if not forloop.last %}border-bottom{% endif %}">
-                    <div>
-                        <div class="fw-semibold" style="font-size:13px">{{ p.nom|truncatechars:28 }}</div>
-                        <div class="text-muted" style="font-size:11px">{{ p.code }} · {{ p.categorie|default:"—" }}</div>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge bg-danger">{{ p.stock_actuel }}</span>
-                        <div class="text-muted" style="font-size:11px">min: {{ p.stock_minimum }}</div>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted text-center mb-0 py-2 small">Aucune alerte de stock</p>
-                {% endfor %}
+            <div class="relative h-64">
+                <canvas id="stockChart" data-type="doughnut"></canvas>
+            </div>
+            <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                Répartition du stock par catégorie
             </div>
         </div>
 
-        <!-- Dernières commandes -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between">
-                <span>Dernières commandes</span>
-                <a href="{% url 'commandes:liste' %}" class="text-decoration-none small text-muted">Tout voir →</a>
+        <!-- Recent Movements Chart -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Mouvements (7 derniers jours)</h2>
+                <a href="{% url 'rapports:mouvements' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                    Détails →
+                </a>
             </div>
-            <div class="card-body p-2">
-                {% for cmd in dernieres_commandes %}
-                <div class="d-flex justify-content-between align-items-center p-2 {% if not forloop.last %}border-bottom{% endif %}">
-                    <div>
-                        <a href="{% url 'commandes:detail' cmd.pk %}" class="text-decoration-none fw-semibold" style="font-size:13px">{{ cmd.numero }}</a>
-                        <div class="text-muted" style="font-size:11px">{{ cmd.fournisseur|default:cmd.client|default:"—" }}</div>
-                    </div>
-                    <span class="badge badge-{{ cmd.statut }} px-2">{{ cmd.get_statut_display }}</span>
+            <div class="relative h-64">
+                <canvas id="mouvementsChart" data-type="line"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Movements Table -->
+        <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Derniers mouvements</h2>
+                    <a href="{% url 'rapports:mouvements' %}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                        Tout voir →
+                    </a>
                 </div>
-                {% empty %}
-                <p class="text-muted text-center mb-0 py-2 small">Aucune commande</p>
-                {% endfor %}
+                
+                {% if derniers_mouvements %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                                    <th class="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">Produit</th>
+                                    <th class="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">Type</th>
+                                    <th class="text-center px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">Qté</th>
+                                    <th class="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">Utilisateur</th>
+                                    <th class="text-left px-6 py-3 font-semibold text-gray-700 dark:text-gray-300">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                {% for m in derniers_mouvements %}
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <td class="px-6 py-3">
+                                            <a href="{% url 'produits:detail' m.produit.pk %}" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                                                {{ m.produit.nom|truncatechars:25 }}
+                                            </a>
+                                        </td>
+                                        <td class="px-6 py-3">
+                                            <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                                {% if m.type_mouvement == 'entree' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400
+                                                {% elif m.type_mouvement == 'sortie' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400
+                                                {% else %}bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400{% endif %}">
+                                                {{ m.get_type_mouvement_display }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-3 text-center font-semibold text-gray-900 dark:text-white">
+                                            {{ m.quantite }}
+                                        </td>
+                                        <td class="px-6 py-3 text-gray-600 dark:text-gray-400">
+                                            {{ m.utilisateur.username|default:"-" }}
+                                        </td>
+                                        <td class="px-6 py-3 text-gray-600 dark:text-gray-400 text-sm">
+                                            {{ m.created_at|date:"d/m H:i" }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <i class="bi bi-inbox text-3xl opacity-50 block mb-2"></i>
+                        <p>Aucun mouvement</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar Alerts -->
+        <div class="space-y-6">
+            <!-- Low Stock Alerts -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-red-200 dark:border-red-900/50 overflow-hidden">
+                <div class="bg-red-50 dark:bg-red-900/20 px-6 py-4 border-b border-red-200 dark:border-red-900/50 flex items-center justify-between">
+                    <h2 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <i class="bi bi-exclamation-triangle text-red-600 dark:text-red-400"></i> Stock bas
+                    </h2>
+                    <a href="{% url 'alertes:liste' %}?lue=0" class="text-xs text-red-600 dark:text-red-400 hover:underline font-semibold">
+                        {% if alertes_count %}{{ alertes_count }} alerte{{ alertes_count|pluralize }}{% endif %}
+                    </a>
+                </div>
+                <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
+                    {% for p in produits_bas %}
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900 dark:text-white text-sm">{{ p.nom|truncatechars:28 }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ p.code }} · {{ p.categorie|default:"—" }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-block bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded text-xs font-bold">
+                                        {{ p.stock_actuel }}
+                                    </span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">min: {{ p.stock_minimum }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-6 text-gray-500 dark:text-gray-400">
+                            <p class="text-sm">Aucune alerte de stock</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="font-bold text-gray-900 dark:text-white">Dernières commandes</h2>
+                    <a href="{% url 'commandes:liste' %}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                        Tout voir →
+                    </a>
+                </div>
+                <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
+                    {% for cmd in dernieres_commandes %}
+                        <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <a href="{% url 'commandes:detail' cmd.pk %}" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold text-sm">
+                                        {{ cmd.numero }}
+                                    </a>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ cmd.fournisseur|default:cmd.client|default:"—" }}</p>
+                                </div>
+                                <span class="px-2 py-1 rounded text-xs font-bold
+                                    {% if cmd.statut == 'en_attente' %}bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400
+                                    {% elif cmd.statut == 'confirmee' %}bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400
+                                    {% elif cmd.statut == 'livree' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400
+                                    {% else %}bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300{% endif %}">
+                                    {{ cmd.get_statut_display }}
+                                </span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-6 text-gray-500 dark:text-gray-400">
+                            <p class="text-sm">Aucune commande</p>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Add Product Modal -->
+<div id="addProductModal" class="modal-overlay">
+    <div class="modal-content max-w-md">
+        <div class="modal-header">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Ajouter un Produit</h2>
+            <button type="button" onclick="modalManager.close('addProductModal')"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none">
+                &times;
+            </button>
+        </div>
+        <div class="modal-body">
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                Accédez au formulaire complet pour ajouter un nouveau produit au système.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="modalManager.close('addProductModal')" class="btn-secondary">
+                Annuler
+            </button>
+            <a href="{% url 'produits:ajouter' %}" class="btn-primary">
+                Continuer
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample data for charts (in a real app, pass from Django context)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Stock Distribution Chart
+        const stockCtx = document.getElementById('stockChart');
+        if (stockCtx) {
+            new Chart(stockCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Stock OK', 'Stock Bas', 'Critique'],
+                    datasets: [{
+                        data: [65, 25, 10],
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderColor: [
+                            '#059669',
+                            '#d97706',
+                            '#dc2626'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#374151',
+                                padding: 15,
+                                font: { size: 13 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Movements Chart
+        const mouvementsCtx = document.getElementById('mouvementsChart');
+        if (mouvementsCtx) {
+            new Chart(mouvementsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                    datasets: [{
+                        label: 'Entrées',
+                        data: [12, 19, 3, 5, 2, 8, 15],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2
+                    }, {
+                        label: 'Sorties',
+                        data: [5, 10, 8, 12, 6, 9, 7],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#374151',
+                                padding: 15,
+                                font: { size: 13 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: document.documentElement.classList.contains('dark') ? '#374151' : '#f3f4f6'
+                            },
+                            ticks: {
+                                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+
 {% endblock %}

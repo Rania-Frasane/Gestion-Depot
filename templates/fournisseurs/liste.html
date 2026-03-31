@@ -1,35 +1,112 @@
 {% extends 'core/base.html' %}
-{% block title %}Fournisseurs{% endblock %}{% block page_title %}Fournisseurs{% endblock %}
+{% block title %}Fournisseurs{% endblock %}
+{% block page_title %}Fournisseurs{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="fw-bold mb-0">Fournisseurs</h5>
-  <a href="{% url 'fournisseurs:ajouter' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>
+
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Fournisseurs</h1>
+    <a href="{% url 'fournisseurs:ajouter' %}" class="btn-primary flex items-center gap-2">
+      <i class="bi bi-plus-lg"></i> Ajouter Fournisseur
+    </a>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <form method="get" class="flex gap-4 flex-wrap">
+      <div class="flex-1 min-w-[250px]">
+        <input type="text" name="q" value="{{ q }}" 
+               class="form-input w-full" 
+               placeholder="Nom, email, ville...">
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="btn-primary">
+          <i class="bi bi-search"></i> Filtrer
+        </button>
+        {% if q %}
+          <a href="{% url 'fournisseurs:liste' %}" class="btn-secondary">
+            <i class="bi bi-x-lg"></i> Effacer
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Fournisseurs Table -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    {% if fournisseurs %}
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Code</th>
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Nom</th>
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Contact</th>
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Téléphone</th>
+              <th class="text-left px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Ville</th>
+              <th class="text-center px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Délai (j)</th>
+              <th class="text-center px-6 py-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for f in fournisseurs %}
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <td class="px-6 py-4">
+                  <code class="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                    {{ f.code }}
+                  </code>
+                </td>
+                <td class="px-6 py-4">
+                  <a href="{% url 'fournisseurs:detail' f.pk %}" 
+                     class="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                    {{ f.nom }}
+                  </a>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  {{ f.contact_nom|default:"—" }}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  {{ f.telephone|default:"—" }}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                  {{ f.ville|default:"—" }}
+                </td>
+                <td class="px-6 py-4 text-center text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ f.delai_livraison }}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center justify-center gap-2">
+                    <a href="{% url 'fournisseurs:modifier' f.pk %}" 
+                       class="p-2 text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" 
+                       title="Modifier">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'fournisseurs:supprimer' f.pk %}" 
+                       class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+                       title="Supprimer">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <i class="bi bi-inbox text-4xl opacity-50 mb-2"></i>
+                  <p class="text-lg">Aucun fournisseur trouvé</p>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-12">
+        <p class="text-gray-500 dark:text-gray-400">Aucun fournisseur disponible</p>
+      </div>
+    {% endif %}
+  </div>
 </div>
-<div class="card mb-3"><div class="card-body py-2">
-  <form method="get" class="d-flex gap-2">
-    <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" style="max-width:260px" placeholder="Nom, email, ville...">
-    <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrer</button>
-  </form>
-</div></div>
-<div class="card"><div class="card-body p-0">
-  <table class="table table-hover mb-0">
-    <thead><tr><th>Code</th><th>Nom</th><th>Contact</th><th>Téléphone</th><th>Ville</th><th>Délai</th><th></th></tr></thead>
-    <tbody>
-    {% for f in fournisseurs %}
-    <tr>
-      <td><code class="text-muted">{{ f.code }}</code></td>
-      <td><a href="{% url 'fournisseurs:detail' f.pk %}" class="text-decoration-none fw-semibold">{{ f.nom }}</a></td>
-      <td><small class="text-muted">{{ f.contact_nom|default:"—" }}</small></td>
-      <td>{{ f.telephone|default:"—" }}</td>
-      <td>{{ f.ville|default:"—" }}</td>
-      <td>{{ f.delai_livraison }}j</td>
-      <td>
-        <a href="{% url 'fournisseurs:modifier' f.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-1"><i class="bi bi-pencil"></i></a>
-        <a href="{% url 'fournisseurs:supprimer' f.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
-      </td>
-    </tr>
-    {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aucun fournisseur</td></tr>{% endfor %}
-    </tbody>
-  </table>
-</div></div>
+
 {% endblock %}
