@@ -1,34 +1,523 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="scroll-smooth">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Connexion — Dépôt Manager</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-body{background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.card{border:none;border-radius:14px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 25px 60px rgba(0,0,0,.4)}
-.brand{font-weight:700;font-size:1.3rem;color:#0f172a}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Dépôt Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Animated Gradient Background */
+        .login-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, #3b82f6, #1e40af, #0f172a, #1e293b);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: #3b82f6;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 200px;
+            height: 200px;
+            background: #8b5cf6;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 5s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: #06b6d4;
+            top: 50%;
+            right: -100px;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        /* Login Container */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-header p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 20px;
+            animation: slideUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 13px 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-text {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .submit-btn:disabled .btn-spinner {
+            display: block;
+        }
+
+        .submit-btn:disabled .btn-text-inner {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+            animation: slideUp 0.6s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .feature-item {
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-item:hover .feature-icon {
+            transform: translateY(-3px);
+        }
+
+        .feature-text {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            .login-bg {
+                background: linear-gradient(-45deg, #0f172a, #1e293b, #0a0e27, #1a1f35);
+                background-size: 400% 400%;
+            }
+
+            .login-card {
+                background: rgba(15, 23, 42, 0.95);
+                border-color: rgba(51, 65, 85, 0.3);
+            }
+
+            .login-header h1 {
+                color: #f1f5f9;
+            }
+
+            .form-label {
+                color: #e2e8f0;
+            }
+
+            .form-input {
+                background: #1e293b;
+                border-color: #334155;
+                color: #f1f5f9;
+            }
+
+            .form-input:focus {
+                border-color: #60a5fa;
+                background: #0f172a;
+                box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+            }
+
+            .features {
+                border-top-color: #334155;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
+
+            .logo {
+                width: 50px;
+                height: 50px;
+                font-size: 28px;
+            }
+
+            .orb {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="card">
-  <div class="text-center mb-4">
-    <div class="brand">📦 Dépôt Manager</div>
-    <p class="text-muted small mt-1">Connectez-vous pour continuer</p>
-  </div>
-  <form method="post">
-    {% csrf_token %}
-    {% if form.errors %}<div class="alert alert-danger py-2 small">Identifiants incorrects.</div>{% endif %}
-    <div class="mb-3">
-      <label class="form-label small fw-semibold">Nom d'utilisateur</label>
-      <input type="text" name="username" class="form-control" autofocus required>
+    <div class="login-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
     </div>
-    <div class="mb-4">
-      <label class="form-label small fw-semibold">Mot de passe</label>
-      <input type="password" name="password" class="form-control" required>
+
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="logo">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <h1>Dépôt Manager</h1>
+                <p>Gérez vos stocks avec efficacité et précision</p>
+            </div>
+
+            <!-- Form -->
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+
+                <!-- Error Messages -->
+                {% if form.non_field_errors or form.errors %}
+                    <div class="error-message">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span>{% if form.non_field_errors %}{{ form.non_field_errors.0 }}{% else %}Identifiants incorrects.{% endif %}</span>
+                    </div>
+                {% endif %}
+
+                <!-- Username Field -->
+                <div class="form-group">
+                    <label for="id_username" class="form-label">
+                        <i class="bi bi-person" style="margin-right: 4px;"></i>Utilisateur
+                    </label>
+                    <input 
+                        class="form-input" 
+                        type="text" 
+                        name="username" 
+                        id="id_username" 
+                        placeholder="Entrez votre nom d'utilisateur"
+                        required
+                        autocomplete="username"
+                        autofocus
+                    >
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="id_password" class="form-label">
+                        <i class="bi bi-lock" style="margin-right: 4px;"></i>Mot de passe
+                    </label>
+                    <input 
+                        class="form-input" 
+                        type="password" 
+                        name="password" 
+                        id="id_password" 
+                        placeholder="Entrez votre mot de passe"
+                        required
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-text">
+                        <span class="btn-spinner"></span>
+                        <span class="btn-text-inner">Se connecter</span>
+                    </span>
+                </button>
+            </form>
+
+            <!-- Features -->
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon" style="color: #3b82f6;">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <p class="feature-text">Stock</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon" style="color: #10b981;">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <p class="feature-text">Inventaire</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon" style="color: #f59e0b;">
+                        <i class="bi bi-archive"></i>
+                    </div>
+                    <p class="feature-text">Dépôts</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-dark w-100 fw-semibold">Se connecter</button>
-  </form>
-</div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Disable button on submit
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+        });
+
+        // Restore button if there are errors
+        window.addEventListener('load', function() {
+            if (document.querySelector('.error-message')) {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>

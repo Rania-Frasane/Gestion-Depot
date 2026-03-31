@@ -271,22 +271,24 @@
 </div>
 
 <script>
-    // Sample data for charts (in a real app, pass from Django context)
+    // Real data from Django context
+    const chartStockData = {{ chart_stock_data|safe }};
+    const chartMovementsData = {{ chart_movements_data|safe }};
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Stock Distribution Chart
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#9ca3af' : '#374151';
+
+        // Stock Distribution Chart - Real Data
         const stockCtx = document.getElementById('stockChart');
         if (stockCtx) {
             new Chart(stockCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Stock OK', 'Stock Bas', 'Critique'],
+                    labels: chartStockData.labels,
                     datasets: [{
-                        data: [65, 25, 10],
-                        backgroundColor: [
-                            '#10b981',
-                            '#f59e0b',
-                            '#ef4444'
-                        ],
+                        data: chartStockData.data,
+                        backgroundColor: chartStockData.colors,
                         borderColor: [
                             '#059669',
                             '#d97706',
@@ -302,7 +304,7 @@
                         legend: {
                             position: 'bottom',
                             labels: {
-                                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#374151',
+                                color: textColor,
                                 padding: 15,
                                 font: { size: 13 }
                             }
@@ -312,27 +314,33 @@
             });
         }
 
-        // Movements Chart
+        // Movements Chart - Real Data
         const mouvementsCtx = document.getElementById('mouvementsChart');
         if (mouvementsCtx) {
             new Chart(mouvementsCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+                    labels: chartMovementsData.labels,
                     datasets: [{
                         label: 'Entrées',
-                        data: [12, 19, 3, 5, 2, 8, 15],
+                        data: chartMovementsData.entrees,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         tension: 0.4,
-                        borderWidth: 2
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#10b981'
                     }, {
                         label: 'Sorties',
-                        data: [5, 10, 8, 12, 6, 9, 7],
+                        data: chartMovementsData.sorties,
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
                         tension: 0.4,
-                        borderWidth: 2
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ef4444'
                     }]
                 },
                 options: {
@@ -341,7 +349,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#374151',
+                                color: textColor,
                                 padding: 15,
                                 font: { size: 13 }
                             }

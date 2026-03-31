@@ -1,0 +1,137 @@
+{% extends 'core/base.html' %}
+{% block title %}Admin - Paramètres{% endblock %}
+{% block page_title %}Paramètres Système{% endblock %}
+{% block content %}
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Paramètres</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Configurez les paramètres du système</p>
+    </div>
+
+    <!-- Settings Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Navigation -->
+        <div class="lg:col-span-1">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-2 sticky top-20">
+                <button class="w-full text-left px-4 py-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-semibold transition-colors">
+                    <i class="bi bi-gear me-2"></i> Général
+                </button>
+                <button class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold transition-colors">
+                    <i class="bi bi-shield me-2"></i> Sécurité
+                </button>
+                <button class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold transition-colors">
+                    <i class="bi bi-envelope me-2"></i> Email
+                </button>
+                <button class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold transition-colors">
+                    <i class="bi bi-info-circle me-2"></i> À propos
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- General Settings -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Paramètres Généraux</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nom de l'application</label>
+                        <input type="text" value="Dépôt Manager" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                        <textarea rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">Gestion de stock et d'inventaire professionnel</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Fuseau horaire</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Europe/Paris</option>
+                                <option>Europe/London</option>
+                                <option>UTC</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Langue</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>Français</option>
+                                <option>English</option>
+                                <option>Español</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="bi bi-check me-2"></i> Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Sécurité</h2>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <p class="font-semibold text-gray-900 dark:text-white">Authentification à deux facteurs</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Activez l'authentification 2FA pour une sécurité renforcée</p>
+                        </div>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" class="hidden peer">
+                            <div class="w-12 h-6 bg-gray-300 peer-checked:bg-blue-600 rounded-full transition-colors"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <p class="font-semibold text-gray-900 dark:text-white">Verrouillage de session</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Verrouiller la session après une période d'inactivité</p>
+                        </div>
+                        <select class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white text-sm">
+                            <option>15 min</option>
+                            <option>30 min</option>
+                            <option>1 heure</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-4">
+                        <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                            <i class="bi bi-key me-2"></i> Changer le mot de passe
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-6">À Propos du Système</h2>
+                
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Version</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">1.0.0</span>
+                    </div>
+                    <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-3">
+                        <span class="text-gray-600 dark:text-gray-400">Dernière mise à jour</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">31/03/2026</span>
+                    </div>
+                    <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-3">
+                        <span class="text-gray-600 dark:text-gray-400">Licence</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">Propriétaire</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
