@@ -1,0 +1,175 @@
+{% extends "core/base.html" %}
+
+{% block title %}Scanner de Code-Barres | Dépôt Manager{% endblock %}
+{% block page_title %}Scanner Rapide{% endblock %}
+
+{% block content %}
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<style>
+    .scanner-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+        overflow: hidden;
+    }
+    #reader {
+        width: 100%;
+        min-height: 300px;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .action-btn {
+        padding: 1rem;
+        border-radius: 12px;
+        border: 2px solid transparent;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .action-btn.active.entree {
+        border-color: #16a34a;
+        background: #dcfce7;
+        color: #16a34a;
+    }
+    .action-btn.active.sortie {
+        border-color: #dc2626;
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    .action-btn:not(.active) {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    #result-area {
+        display: none;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <div class="card scanner-card mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">1. Choisissez l'Action</h5>
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="action-btn active entree flex-fill text-center" onclick="setAction('entree')" id="btn-entree">
+                            <i class="bi bi-box-arrow-in-down me-2"></i>Entrée (Ajout)
+                        </div>
+                        <div class="action-btn sortie flex-fill text-center" onclick="setAction('sortie')" id="btn-sortie">
+                            <i class="bi bi-box-arrow-up me-2"></i>Sortie (Retrait)
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <label class="form-label me-3 fw-bold mb-0" style="white-space:nowrap;">Quantité / Scan :</label>
+                        <input type="number" id="scan-qty" class="form-control form-control-lg text-center fw-bold" value="1" min="1" style="max-width: 100px;">
+                    </div>
+
+                    <h5 class="mb-3">2. Scannez le Code-Barre</h5>
+                    <div id="reader"></div>
+                </div>
+            </div>
+
+            <!-- Result Alert -->
+            <div id="result-area" class="alert alert-success d-flex align-items-center" role="alert" style="border-radius: 12px; border: none;">
+                <i class="bi bi-check-circle-fill fs-3 me-3" id="result-icon"></i>
+                <div>
+                    <strong id="result-title" class="d-block mb-1">Succès</strong>
+                    <span id="result-msg">Message</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% csrf_token %}
+
+<script>
+    let currentAction = 'entree';
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const resultArea = document.getElementById('result-area');
+    const resultTitle = document.getElementById('result-title');
+    const resultMsg = document.getElementById('result-msg');
+    const resultIcon = document.getElementById('result-icon');
+    let isProcessing = false;
+
+    function setAction(action) {
+        currentAction = action;
+        document.getElementById('btn-entree').classList.remove('active');
+        document.getElementById('btn-sortie').classList.remove('active');
+        document.getElementById('btn-' + action).classList.add('active');
+    }
+
+    function showResult(success, title, msg) {
+        resultArea.style.display = 'flex';
+        resultTitle.textContent = title;
+        resultMsg.textContent = msg;
+        
+        if (success) {
+            resultArea.className = 'alert alert-success d-flex align-items-center mt-3';
+            resultIcon.className = 'bi bi-check-circle-fill fs-3 me-3';
+        } else {
+            resultArea.className = 'alert alert-danger d-flex align-items-center mt-3';
+            resultIcon.className = 'bi bi-exclamation-triangle-fill fs-3 me-3';
+        }
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            resultArea.style.display = 'none';
+        }, 3000);
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        if (isProcessing) return;
+        
+        // Pause processing slightly to prevent multiple scans of same code instantly
+        isProcessing = true;
+        
+        const qty = document.getElementById('scan-qty').value;
+        
+        fetch('{% url "produits:api_scanner_mouvement" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                code: decodedText,
+                action: currentAction,
+                quantite: qty
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showResult(true, `Opération Réussie`, `${data.action_label} ${data.quantite}x ${data.produit_nom} (Nouveau Stock: ${data.nouveau_stock})`);
+            } else {
+                showResult(false, `Erreur`, data.error);
+            }
+            
+            // Allow next scan after 1.5s delay
+            setTimeout(() => { isProcessing = false; }, 1500);
+        })
+        .catch(err => {
+            console.error(err);
+            showResult(false, `Erreur`, "Problème de connexion avec le serveur.");
+            setTimeout(() => { isProcessing = false; }, 1500);
+        });
+    }
+
+    function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: {width: 250, height: 150} },
+        /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>
+{% endblock %}

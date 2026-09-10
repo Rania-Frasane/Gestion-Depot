@@ -18,6 +18,7 @@ class Client(models.Model):
     plafond_credit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     remise_habituelle = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     note = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='clients/', blank=True, null=True)
     actif = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

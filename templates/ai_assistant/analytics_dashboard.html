@@ -1,0 +1,261 @@
+{% extends "core/base.html" %}
+
+{% block title %}Analyses Avancées | Dépôt Manager{% endblock %}
+{% block page_title %}Tableau de Bord des Analyses Avancées{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .analytics-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        height: 100%;
+    }
+    .analytics-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .table-custom th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        padding: 0.75rem;
+        border-top: none;
+    }
+    .table-custom td {
+        padding: 0.75rem;
+        vertical-align: middle;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .score-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .score-high { background: #dcfce7; color: #16a34a; }
+    .score-med { background: #fef3c7; color: #d97706; }
+    .score-low { background: #fee2e2; color: #dc2626; }
+</style>
+
+<div class="container-fluid">
+    <!-- Header with Export -->
+    <div class="d-flex justify-content-end mb-4">
+        <a href="{% url 'ai_assistant:analytics_export' %}" class="btn btn-outline-success fw-semibold">
+            <i class="bi bi-file-earmark-excel me-2"></i>Exporter CSV (Top Produits)
+        </a>
+    </div>
+
+    <!-- Revenue Trends Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h3 class="analytics-title">
+                    <span><i class="bi bi-graph-up-arrow text-primary me-2"></i>Tendance des Revenus (30 derniers jours)</span>
+                </h3>
+                <div style="height: 300px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row: Top Products & Top Customers -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="analytics-card">
+                <h3 class="analytics-title">
+                    <span><i class="bi bi-star text-warning me-2"></i>Produits les Plus Vendus</span>
+                </h3>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Produit</th>
+                                <th class="text-center">Qté Vendue</th>
+                                <th class="text-end">CA (MAD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in top_products %}
+                            <tr>
+                                <td><span class="badge bg-light text-dark border">{{ p.code }}</span></td>
+                                <td class="fw-semibold">{{ p.nom }}</td>
+                                <td class="text-center fw-bold text-primary">{{ p.quantite }}</td>
+                                <td class="text-end fw-semibold text-success">{{ p.revenue|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted">Aucune donnée disponible.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="analytics-card">
+                <h3 class="analytics-title">
+                    <span><i class="bi bi-people text-info me-2"></i>Clients les Plus Fidèles</span>
+                </h3>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th class="text-center">Commandes</th>
+                                <th class="text-center">Panier Moyen (MAD)</th>
+                                <th class="text-end">Total Dépensé (MAD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in customers %}
+                            <tr>
+                                <td class="fw-semibold">{{ c.nom }}</td>
+                                <td class="text-center fw-bold">{{ c.total_commandes }}</td>
+                                <td class="text-center text-muted">{{ c.panier_moyen|floatformat:2 }}</td>
+                                <td class="text-end fw-semibold text-success">{{ c.total_depense|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted">Aucune donnée disponible.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Third Row: Supplier Performance -->
+    <div class="row">
+        <div class="col-12">
+            <div class="analytics-card">
+                <h3 class="analytics-title">
+                    <span><i class="bi bi-truck text-secondary me-2"></i>Performance des Fournisseurs</span>
+                </h3>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fournisseur</th>
+                                <th class="text-center">Total Commandes</th>
+                                <th class="text-center">Taux de Livraison</th>
+                                <th class="text-center">Délai Moyen (Jours)</th>
+                                <th class="text-center">Score Global</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in supplier_perf %}
+                            <tr>
+                                <td class="fw-semibold">{{ s.nom }}</td>
+                                <td class="text-center">{{ s.total_commandes }}</td>
+                                <td class="text-center">
+                                    <div class="progress" style="height: 6px; width: 60px; margin: 0 auto;">
+                                        <div class="progress-bar {% if s.taux_livraison >= 80 %}bg-success{% elif s.taux_livraison >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" aria-valuenow="{{ s.taux_livraison }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ s.taux_livraison }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ s.taux_livraison|floatformat:1 }}%</small>
+                                </td>
+                                <td class="text-center fw-bold">{{ s.delai_moyen|floatformat:1 }}</td>
+                                <td class="text-center">
+                                    <span class="score-badge {% if s.score >= 80 %}score-high{% elif s.score >= 50 %}score-med{% else %}score-low{% endif %}">
+                                        {{ s.score|floatformat:1 }} / 100
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted">Aucune donnée disponible.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ trends_json|json_script:"trendsData" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const trendsData = JSON.parse(document.getElementById('trendsData').textContent);
+    
+    if (trendsData && trendsData.length > 0) {
+        const labels = trendsData.map(item => item.label);
+        const data = trendsData.map(item => item.revenue);
+        
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenus (MAD)',
+                    data: data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#3b82f6',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 14, weight: 'bold' },
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString('fr-FR') + ' MAD';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 }, color: '#64748b' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9', borderDash: [4, 4] },
+                        ticks: {
+                            font: { size: 11 },
+                            color: '#64748b',
+                            callback: function(value) {
+                                if (value >= 1000) return value / 1000 + 'k';
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

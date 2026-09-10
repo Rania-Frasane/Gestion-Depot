@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+
+{% block title %}Détail Transfert {{ transfert.numero }} | Dépôt Manager{% endblock %}
+{% block page_title %}Transfert : {{ transfert.numero }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">Résumé du Transfert</h6>
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Source</label>
+                    <div class="fw-bold fs-5">{{ transfert.entrepot_source.nom }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Destination</label>
+                    <div class="fw-bold fs-5">{{ transfert.entrepot_destination.nom }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small d-block">Statut</label>
+                    <span class="badge {% if transfert.statut == 'recu' %}bg-success{% elif transfert.statut == 'expedie' %}bg-warning{% else %}bg-secondary{% endif %} px-3 py-2">
+                        {{ transfert.get_statut_display }}
+                    </span>
+                </div>
+                <div class="mb-0">
+                    <label class="text-muted small d-block">Notes</label>
+                    <p class="mb-0 italic">{{ transfert.notes|default:"Aucune note." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="mb-0 fw-bold">Liste des Articles ({{ transfert.lignes.count }})</h6>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i>Imprimer Bon
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produit</th>
+                                <th class="text-center">Quantité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for line in transfert.lignes.all %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ line.produit.nom }}</div>
+                                    <small class="text-muted">{{ line.produit.code }}</small>
+                                </td>
+                                <td class="text-center fw-bold">{{ line.quantite }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="{% url 'logistique:transfert_liste' %}" class="btn btn-light">Retour à l'historique</a>
+                    {% if transfert.statut == 'expedie' %}
+                    <a href="{% url 'logistique:transfert_recevoir' transfert.pk %}" class="btn btn-primary px-4 fw-bold float-end">
+                        <i class="bi bi-check-all me-2"></i>Confirmer la Réception
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

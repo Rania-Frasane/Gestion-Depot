@@ -10,4 +10,8 @@ urlpatterns = [
     path('<int:pk>/modifier/', views.modifier, name='modifier'),
     path('<int:pk>/supprimer/', views.supprimer, name='supprimer'),
     path('<int:pk>/mouvement/', views.mouvement, name='mouvement'),
+    path('etiquettes/', views.print_labels, name='print_labels'),
+    path('scanner/', views.scanner, name='scanner'),
+    path('api/scanner/', views.api_scanner_mouvement, name='api_scanner_mouvement'),
+    path('<int:pk>/regenerate-qr/', views.regenerate_qr_code, name='regenerate_qr_code'),
 ]

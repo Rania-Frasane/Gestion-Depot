@@ -1,0 +1,560 @@
+{% extends "core/base.html" %}
+{% block title %}Prévision de la Demande – Dépôt Manager{% endblock %}
+{% block page_title %}<i class="bi bi-graph-up-arrow me-2" style="color:#0ea5e9"></i>Prévision de la Demande{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --fc-blue: #0ea5e9;
+    --fc-green: #22c55e;
+    --fc-red: #ef4444;
+    --fc-orange: #f59e0b;
+    --fc-purple: #8b5cf6;
+  }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .kpi-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  }
+
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    border-radius: 0 14px 0 60px;
+    opacity: .07;
+  }
+
+  .kpi-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .kpi-info .label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .kpi-info .value {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #0f172a;
+  }
+
+  /* ── FORECAST TABLE ── */
+  .forecast-section {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 14px rgba(0,0,0,.06);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .forecast-header {
+    padding: 1.1rem 1.4rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .forecast-header h5 {
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    font-size: 15px;
+  }
+
+  table.forecast-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .forecast-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+  }
+
+  .forecast-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .15s;
+    cursor: pointer;
+  }
+
+  .forecast-table tbody tr:hover { background: #f8fafc; }
+  .forecast-table tbody tr:last-child { border-bottom: none; }
+
+  .forecast-table td {
+    padding: 11px 14px;
+    vertical-align: middle;
+    color: #334155;
+  }
+
+  .prod-code {
+    font-family: monospace;
+    font-size: 11px;
+    background: #f1f5f9;
+    padding: 2px 7px;
+    border-radius: 5px;
+    color: #64748b;
+  }
+
+  /* Trend badge */
+  .trend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .trend-hausse  { background: #dcfce7; color: #15803d; }
+  .trend-baisse  { background: #fee2e2; color: #b91c1c; }
+  .trend-stable  { background: #f1f5f9; color: #475569; }
+
+  /* Confidence dots */
+  .conf-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  .conf-haute   .conf-dot { background: #22c55e; }
+  .conf-moyenne .conf-dot { background: #f59e0b; }
+  .conf-faible  .conf-dot { background: #94a3b8; }
+
+  /* Reorder badge */
+  .reorder-yes {
+    background: #fef9c3;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .reorder-no {
+    color: #22c55e;
+    font-size: 15px;
+  }
+
+  /* Progress bar for stock coverage */
+  .coverage-bar {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+    width: 80px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+
+  .coverage-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .5s ease;
+  }
+
+  /* ── CHART MODAL ── */
+  .chart-modal-body {
+    padding: 1rem;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+
+  /* Empty state */
+  .empty-forecast {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+  }
+
+  .empty-forecast i { font-size: 3rem; color: #e2e8f0; margin-bottom: 1rem; }
+</style>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:#e0f2fe;color:#0ea5e9">
+      <i class="bi bi-boxes"></i>
+    </div>
+    <div class="kpi-info">
+      <div class="label">Produits analysés</div>
+      <div class="value">{{ total_analysed }}</div>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:#fef9c3;color:#ca8a04">
+      <i class="bi bi-cart-plus"></i>
+    </div>
+    <div class="kpi-info">
+      <div class="label">Réapprovisionnements</div>
+      <div class="value" style="color:#ca8a04">{{ total_reorder }}</div>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:#dcfce7;color:#16a34a">
+      <i class="bi bi-graph-up-arrow"></i>
+    </div>
+    <div class="kpi-info">
+      <div class="label">Tendance hausse</div>
+      <div class="value" style="color:#16a34a">{{ trends.hausse }}</div>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:#fee2e2;color:#dc2626">
+      <i class="bi bi-graph-down-arrow"></i>
+    </div>
+    <div class="kpi-info">
+      <div class="label">Tendance baisse</div>
+      <div class="value" style="color:#dc2626">{{ trends.baisse }}</div>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-icon" style="background:#f3e8ff;color:#7c3aed">
+      <i class="bi bi-dash-lg"></i>
+    </div>
+    <div class="kpi-info">
+      <div class="label">Stable</div>
+      <div class="value" style="color:#7c3aed">{{ trends.stable }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Forecast Table -->
+<div class="forecast-section">
+  <div class="forecast-header">
+    <h5><i class="bi bi-table me-2"></i>Prévisions Détaillées — 30 jours</h5>
+    <div class="d-flex gap-2">
+      <input type="text" id="searchInput" class="form-control form-control-sm rounded-3"
+             placeholder="Rechercher un produit…" style="width:220px"
+             oninput="filterTable(this.value)">
+      <span class="badge rounded-pill" style="background:#e0f2fe;color:#0369a1;align-self:center;font-size:11px">
+        Analyse 90j · Horizon 30j
+      </span>
+    </div>
+  </div>
+
+  {% if forecasts %}
+  <div style="overflow-x:auto">
+    <table class="forecast-table" id="forecastTable">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Stock actuel</th>
+          <th>Demande moy/j</th>
+          <th>Besoin 30j</th>
+          <th>Couverture</th>
+          <th>Tendance</th>
+          <th>Confiance</th>
+          <th>Réapprovisionnement</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in forecasts %}
+        <tr onclick="openChart({{ f.produit_id }}, '{{ f.produit_nom|escapejs }}')" data-name="{{ f.produit_nom|lower }}">
+          <td>
+            <span class="prod-code">{{ f.produit_code }}</span>
+            <span class="ms-2 fw-600">{{ f.produit_nom }}</span>
+          </td>
+          <td>
+            <strong>{{ f.stock_actuel }}</strong>
+            <small class="text-muted ms-1">unités</small>
+          </td>
+          <td>{{ f.avg_daily_demand }}</td>
+          <td><strong>{{ f.predicted_total }}</strong></td>
+          <td>
+            {% if f.avg_daily_demand > 0 %}
+              {% widthratio f.stock_actuel f.predicted_total 100 as coverage_pct %}
+              {% if coverage_pct > 100 %}
+                <span style="color:#22c55e;font-size:12px">✓ Suffisant</span>
+              {% elif coverage_pct > 50 %}
+                <span style="color:#f59e0b;font-size:12px">{{ coverage_pct }}%</span>
+              {% else %}
+                <span style="color:#ef4444;font-size:12px">{{ coverage_pct }}%</span>
+              {% endif %}
+              <span class="coverage-bar">
+                <span class="coverage-fill"
+                      style="width:{% if coverage_pct > 100 %}100{% else %}{{ coverage_pct }}{% endif %}%;
+                             background:{% if coverage_pct > 100 %}#22c55e{% elif coverage_pct > 50 %}#f59e0b{% else %}#ef4444{% endif %}">
+                </span>
+              </span>
+            {% else %}
+              <span class="text-muted">–</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="trend-badge trend-{{ f.trend }}">
+              {% if f.trend == 'hausse' %}<i class="bi bi-arrow-up-short"></i>Hausse
+              {% elif f.trend == 'baisse' %}<i class="bi bi-arrow-down-short"></i>Baisse
+              {% else %}<i class="bi bi-dash"></i>Stable{% endif %}
+            </span>
+          </td>
+          <td>
+            <span class="conf-{{ f.confidence }}">
+              <span class="conf-dot"></span>
+              {{ f.confidence|capfirst }}
+            </span>
+          </td>
+          <td>
+            {% if f.reorder_needed %}
+              <span class="reorder-yes">⚠ {{ f.reorder_qty }} unités</span>
+            {% else %}
+              <span class="reorder-no"><i class="bi bi-check-circle-fill"></i></span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-sm btn-light rounded-3" style="font-size:12px"
+                    onclick="event.stopPropagation(); openChart({{ f.produit_id }}, '{{ f.produit_nom|escapejs }}')">
+              <i class="bi bi-graph-up"></i>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-forecast">
+    <i class="bi bi-inbox d-block"></i>
+    <h6>Aucun mouvement de stock détecté</h6>
+    <p class="small">Enregistrez des sorties de stock pour obtenir des prévisions de demande.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Chart Modal -->
+<div class="modal fade" id="chartModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-700" id="chartModalTitle">
+          <i class="bi bi-graph-up me-2" style="color:#0ea5e9"></i>Prévision de demande
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body chart-modal-body">
+        <div class="row g-3 mb-3" id="chartKpis"></div>
+        <ul class="nav nav-pills mb-3" id="chartTabs">
+          <li class="nav-item">
+            <button class="nav-link active" onclick="showTab('history')">
+              <i class="bi bi-clock-history me-1"></i>Historique
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" onclick="showTab('forecast')">
+              <i class="bi bi-graph-up-arrow me-1"></i>Prévision 30j
+            </button>
+          </li>
+        </ul>
+        <div id="historyTab" class="chart-container">
+          <canvas id="historyChart"></canvas>
+        </div>
+        <div id="forecastTab" class="chart-container" style="display:none">
+          <canvas id="forecastChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  let histChart = null, fcastChart = null;
+
+  // ── TABLE SEARCH ──
+  function filterTable(q) {
+    document.querySelectorAll('#forecastTable tbody tr').forEach(row => {
+      row.style.display = row.dataset.name.includes(q.toLowerCase()) ? '' : 'none';
+    });
+  }
+
+  // ── TAB TOGGLE ──
+  function showTab(tab) {
+    document.querySelectorAll('#chartTabs .nav-link').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('historyTab').style.display  = tab === 'history'  ? 'block' : 'none';
+    document.getElementById('forecastTab').style.display = tab === 'forecast' ? 'block' : 'none';
+  }
+
+  // ── OPEN CHART MODAL ──
+  async function openChart(id, name) {
+    document.getElementById('chartModalTitle').innerHTML =
+      `<i class="bi bi-graph-up me-2" style="color:#0ea5e9"></i>${name}`;
+    document.getElementById('chartKpis').innerHTML = '<div class="text-muted small p-2">Chargement…</div>';
+
+    const modal = new bootstrap.Modal(document.getElementById('chartModal'));
+    modal.show();
+
+    const res  = await fetch(`/ai/forecast/${id}/data/`);
+    const data = await res.json();
+
+    // KPI cards
+    document.getElementById('chartKpis').innerHTML = `
+      <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 text-center" style="background:#f0f9ff">
+          <div style="font-size:11px;color:#0369a1;font-weight:600">STOCK ACTUEL</div>
+          <div style="font-size:22px;font-weight:800;color:#0ea5e9">${data.stock_actuel}</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 text-center" style="background:#fef9c3">
+          <div style="font-size:11px;color:#92400e;font-weight:600">BESOIN 30J</div>
+          <div style="font-size:22px;font-weight:800;color:#ca8a04">${data.predicted_total}</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 text-center" style="background:#f0fdf4">
+          <div style="font-size:11px;color:#166534;font-weight:600">MOY/JOUR</div>
+          <div style="font-size:22px;font-weight:800;color:#22c55e">${data.avg_daily_demand}</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 text-center" style="background:${data.reorder_needed ? '#fef2f2' : '#f0fdf4'}">
+          <div style="font-size:11px;color:${data.reorder_needed ? '#991b1b' : '#166534'};font-weight:600">RÉAPPRO</div>
+          <div style="font-size:18px;font-weight:800;color:${data.reorder_needed ? '#ef4444' : '#22c55e'}">
+            ${data.reorder_needed ? '⚠ ' + data.reorder_qty + ' u.' : '✓ OK'}
+          </div>
+        </div>
+      </div>`;
+
+    // Destroy old charts
+    if (histChart)  { histChart.destroy();  histChart  = null; }
+    if (fcastChart) { fcastChart.destroy(); fcastChart = null; }
+
+    // Show history tab first
+    showTabDirect('history');
+
+    // History chart
+    const hCtx = document.getElementById('historyChart').getContext('2d');
+    histChart = new Chart(hCtx, {
+      type: 'bar',
+      data: {
+        labels: data.historical_labels.slice(-30),
+        datasets: [
+          {
+            label: 'Sorties journalières',
+            data: data.historical_values.slice(-30),
+            backgroundColor: 'rgba(14,165,233,.35)',
+            borderColor: '#0ea5e9',
+            borderWidth: 2,
+            borderRadius: 4,
+          },
+          {
+            label: 'Moyenne mobile 7j',
+            data: data.moving_avg.slice(-30),
+            type: 'line',
+            borderColor: '#f59e0b',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.4,
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+        }
+      }
+    });
+
+    // Forecast chart
+    const fCtx = document.getElementById('forecastChart').getContext('2d');
+    fcastChart = new Chart(fCtx, {
+      type: 'line',
+      data: {
+        labels: data.forecast_labels,
+        datasets: [
+          {
+            label: 'Demande prévue',
+            data: data.forecast_values,
+            borderColor: '#7c3aed',
+            backgroundColor: 'rgba(124,58,237,.12)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2.5,
+            pointRadius: 3,
+          },
+          {
+            label: 'Stock actuel',
+            data: Array(data.forecast_labels.length).fill(data.stock_actuel),
+            borderColor: '#22c55e',
+            borderDash: [6, 3],
+            borderWidth: 2,
+            pointRadius: 0,
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+        }
+      }
+    });
+  }
+
+  function showTabDirect(tab) {
+    document.getElementById('historyTab').style.display  = tab === 'history'  ? 'block' : 'none';
+    document.getElementById('forecastTab').style.display = tab === 'forecast' ? 'block' : 'none';
+    document.querySelectorAll('#chartTabs .nav-link').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0 && tab === 'history') || (i === 1 && tab === 'forecast'));
+    });
+  }
+</script>
+{% endblock %}

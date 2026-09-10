@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Impression d'Étiquettes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f1f5f9;
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn-print {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .page {
+            background: #fff;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 10mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+        .label {
+            width: 50mm;
+            height: 30mm;
+            border: 1px solid #ccc;
+            margin: 2mm;
+            padding: 2mm;
+            text-align: center;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .label-title {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+        .label-price {
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        .barcode {
+            max-width: 100%;
+            height: 18mm;
+        }
+        
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .controls {
+                display: none;
+            }
+            .page {
+                box-shadow: none;
+                width: auto;
+                height: auto;
+                padding: 0;
+            }
+            .label {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+    <div class="controls">
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimer les Étiquettes</button>
+        <button class="btn-print" style="background:#64748b; margin-left:10px;" onclick="window.history.back()">Retour</button>
+    </div>
+    
+    <div class="page">
+        {% for p in produits %}
+        <!-- Generate 3 labels per product just as an example, or could be a user choice. We'll just do 1 for now unless user repeats it. Let's do 1 per product selection. -->
+        <div class="label">
+            <div class="label-title">{{ p.nom }}</div>
+            <svg class="barcode" 
+                 jsbarcode-format="CODE128" 
+                 jsbarcode-value="{{ p.code_barre|default:p.code }}" 
+                 jsbarcode-textmargin="0" 
+                 jsbarcode-fontoptions="bold">
+            </svg>
+            <div class="label-price">{{ p.prix_vente|floatformat:2 }} MAD</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        JsBarcode(".barcode").init();
+    </script>
+</body>
+</html>

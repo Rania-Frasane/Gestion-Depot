@@ -1,0 +1,71 @@
+{% extends "core/base.html" %}
+
+{% block title %}Transferts de Stock | Dépôt Manager{% endblock %}
+{% block page_title %}Mouvements Inter-Entrepôts{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0"><i class="bi bi-arrow-left-right me-2"></i>Historique des Transferts</h5>
+                    <a href="{% url 'logistique:transfert_nouveau' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>Nouveau Transfert
+                    </a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>N° Transfert</th>
+                                <th>Source</th>
+                                <th>Destination</th>
+                                <th>Date</th>
+                                <th class="text-center">Statut</th>
+                                <th>Créateur</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tr in transferts %}
+                            <tr>
+                                <td class="fw-bold">{{ tr.numero }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ tr.entrepot_source.nom }}</span></td>
+                                <td><span class="badge bg-light text-dark border">{{ tr.entrepot_destination.nom }}</span></td>
+                                <td>{{ tr.created_at|date:"d/m/Y H:i" }}</td>
+                                <td class="text-center">
+                                    {% if tr.statut == 'brouillon' %}
+                                        <span class="badge bg-secondary px-3">Brouillon</span>
+                                    {% elif tr.statut == 'expedie' %}
+                                        <span class="badge bg-warning px-3">Expédié</span>
+                                    {% elif tr.statut == 'recu' %}
+                                        <span class="badge bg-success px-3">Reçu</span>
+                                    {% else %}
+                                        <span class="badge bg-danger px-3">{{ tr.get_statut_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ tr.createur.username }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'logistique:transfert_detail' tr.pk %}" class="btn btn-sm btn-light">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if tr.statut == 'brouillon' %}
+                                    <a href="{% url 'logistique:transfert_edit' tr.pk %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">Aucun transfert enregistré.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

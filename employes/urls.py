@@ -7,4 +7,5 @@ urlpatterns = [
     path('<int:pk>/', views.detail, name='detail'),
     path('<int:pk>/modifier/', views.modifier, name='modifier'),
     path('<int:pk>/supprimer/', views.supprimer, name='supprimer'),
+    path('performance/', views.performance_dashboard, name='performance'),
 ]

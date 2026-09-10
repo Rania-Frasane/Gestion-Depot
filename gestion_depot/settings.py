@@ -3,7 +3,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-change-this-in-production-abc123xyz'
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -24,9 +24,21 @@ INSTALLED_APPS = [
     'alertes.apps.AlertesConfig',
     # Core
     'core.apps.CoreConfig',
+    # IA
+    'ai_assistant.apps.AiAssistantConfig',
+    # Logistique
+    'logistique.apps.LogistiqueConfig',
+    # Batiments
+    'batiments.apps.BatimentsConfig',
+    # API
+    'rest_framework',
+    'corsheaders',
+    'api',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -98,3 +110,23 @@ DEFAULT_FROM_EMAIL = 'Dépôt Manager <votre_email@gmail.com>'
 
 # Alertes
 STOCK_ALERTE_EMAIL = 'admin@depot.ma'
+
+# ── Assistant IA (Google Gemini) ──────────────────────────────
+import os
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', "AIzaSyAre4h5IQ-CMMg9GPvKDO1nPGV4hR901sQ")
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+
+# ── API & CORS ────────────────────────────────────────────────
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True

@@ -1,0 +1,281 @@
+{% extends "core/base.html" %}
+
+{% block title %}Réapprovisionnement Intelligent | Dépôt Manager{% endblock %}
+{% block page_title %}Réapprovisionnement Intelligent{% endblock %}
+
+{% block content %}
+<style>
+    .suggestion-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .suggestion-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .supplier-header {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border-radius: 16px 16px 0 0;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .supplier-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+    .table-custom {
+        margin: 0;
+    }
+    .table-custom th {
+        border-top: none;
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        padding: 1rem;
+    }
+    .table-custom td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(59,130,246,0.1);
+        color: #3b82f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.2rem;
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Top Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="stat-card" style="border-left-color: #3b82f6;">
+                <div class="stat-icon" style="background: rgba(59,130,246,0.1); color: #3b82f6;">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <h3 class="stat-value">{{ total_fournisseurs }}</h3>
+                    <p class="stat-label">Fournisseurs Concernés</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="stat-card" style="border-left-color: #f59e0b;">
+                <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: #f59e0b;">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div>
+                    <h3 class="stat-value">{{ total_lignes }}</h3>
+                    <p class="stat-label">Produits à Réapprovisionner</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left-color: #10b981;">
+                <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: #10b981;">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <div>
+                    <h3 class="stat-value">{{ total_cout|floatformat:2 }} MAD</h3>
+                    <p class="stat-label">Coût Total Estimé</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert / Intro -->
+    <div class="alert alert-info d-flex align-items-center" role="alert" style="border-radius: 12px; border: none; background: #e0f2fe; color: #0369a1;">
+        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+        <div>
+            <strong>Recommandations Intelligentes :</strong> Ces suggestions sont générées automatiquement en fonction de la demande prévue sur les 30 prochains jours, des délais de livraison de vos fournisseurs, et de votre stock de sécurité.
+        </div>
+    </div>
+
+    {% if not suggestions %}
+        <div class="text-center py-5">
+            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486747.png" alt="Tout va bien" style="width: 120px; opacity: 0.5; margin-bottom: 1rem;">
+            <h4 class="text-muted">Aucun réapprovisionnement urgent</h4>
+            <p class="text-muted">Votre stock semble optimal pour le moment.</p>
+        </div>
+    {% else %}
+        {% for suggestion in suggestions %}
+        <div class="card suggestion-card">
+            <div class="supplier-header">
+                <div>
+                    <h3 class="supplier-title"><i class="bi bi-building me-2"></i>{{ suggestion.fournisseur_nom }}</h3>
+                    <p class="text-muted mb-0 mt-1" style="font-size: 0.85rem;">
+                        <i class="bi bi-clock-history me-1"></i> Délai de livraison : {{ suggestion.delai_livraison }} jours
+                    </p>
+                </div>
+                <div class="text-end">
+                    <span class="d-block text-muted mb-1" style="font-size: 0.85rem;">Total estimé</span>
+                    <span class="fs-5 fw-bold text-success">{{ suggestion.total_estime|floatformat:2 }} MAD</span>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Produit</th>
+                            <th class="text-center">Stock Actuel</th>
+                            <th class="text-center">Demande / Jour</th>
+                            <th class="text-center" style="width: 15%;">Qté Suggérée</th>
+                            <th class="text-end">Prix U. (MAD)</th>
+                            <th class="text-end">Total (MAD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ligne in suggestion.lignes %}
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">{{ ligne.produit_code }}</span></td>
+                            <td class="fw-semibold">{{ ligne.produit_nom }}</td>
+                            <td class="text-center">
+                                <span class="{% if ligne.stock_actuel <= ligne.stock_minimum %}text-danger fw-bold{% else %}text-warning{% endif %}">
+                                    {{ ligne.stock_actuel }}
+                                </span>
+                            </td>
+                            <td class="text-center">{{ ligne.avg_daily_demand|floatformat:1 }}</td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center fw-bold text-primary suggestion-qty-input" 
+                                       data-prod-id="{{ ligne.produit_id }}"
+                                       data-fournisseur-id="{{ suggestion.fournisseur_id }}"
+                                       value="{{ ligne.quantite_suggeree }}" min="1">
+                            </td>
+                            <td class="text-end text-muted">{{ ligne.prix_achat|floatformat:2 }}</td>
+                            <td class="text-end fw-semibold">{{ ligne.cout_estime|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card-footer bg-white border-top p-3 text-end" style="border-radius: 0 0 16px 16px;">
+                <button class="btn btn-primary px-4 fw-semibold generate-order-btn" 
+                        data-fournisseur-id="{{ suggestion.fournisseur_id }}"
+                        data-fournisseur-nom="{{ suggestion.fournisseur_nom }}">
+                    <i class="bi bi-cart-plus me-2"></i>Générer Commande Brouillon
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- CSRF Token -->
+{% csrf_token %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    document.querySelectorAll('.generate-order-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const fournisseurId = this.dataset.fournisseurId;
+            const fournisseurNom = this.dataset.fournisseurNom;
+            const originalText = this.innerHTML;
+            
+            // Gather items
+            const lignes = [];
+            document.querySelectorAll(`.suggestion-qty-input[data-fournisseur-id="${fournisseurId}"]`).forEach(input => {
+                const qty = parseInt(input.value);
+                if (qty > 0) {
+                    lignes.push({
+                        produit_id: parseInt(input.dataset.prodId),
+                        quantite_suggeree: qty
+                    });
+                }
+            });
+            
+            if (lignes.length === 0) {
+                alert("Veuillez sélectionner au moins un produit avec une quantité valide.");
+                return;
+            }
+            
+            if (!confirm(`Voulez-vous vraiment générer une commande brouillon pour ${fournisseurNom} ?`)) {
+                return;
+            }
+            
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Création...';
+            this.disabled = true;
+            
+            try {
+                const response = await fetch('{% url "ai_assistant:create_draft_order" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        fournisseur_id: parseInt(fournisseurId),
+                        lignes: lignes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    alert(`✅ ${data.message}`);
+                    this.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Commande Créée';
+                    this.classList.replace('btn-primary', 'btn-success');
+                    
+                    setTimeout(() => {
+                        window.location.href = `/commandes/`;
+                    }, 1500);
+                } else {
+                    alert('Erreur: ' + (data.error || 'Erreur inconnue'));
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Une erreur est survenue lors de la communication avec le serveur.");
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

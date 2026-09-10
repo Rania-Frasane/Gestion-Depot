@@ -1,0 +1,140 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ entrepot.nom }} | Dépôt Manager{% endblock %}
+{% block page_title %}Détail de l'Entrepôt : {{ entrepot.nom }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Stats cards -->
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">Informations</h6>
+                <p class="mb-1"><strong>Responsable:</strong> {{ entrepot.responsable|default:"Non assigné" }}</p>
+                <p class="mb-1"><strong>Ville:</strong> {{ entrepot.ville }}</p>
+                <p class="mb-0"><strong>Adresse:</strong> {{ entrepot.adresse }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">Emplacements</h6>
+                <div class="d-flex align-items-center">
+                    <h2 class="mb-0 fw-bold me-3">{{ emplacements.count }}</h2>
+                    <span class="badge bg-info bg-opacity-10 text-info px-3">Zones de stockage</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <h6 class="text-muted text-uppercase small fw-bold mb-3">Stock Total</h6>
+                <div class="d-flex align-items-center">
+                    <h2 class="mb-0 fw-bold me-3">{{ stocks.count }}</h2>
+                    <span class="badge bg-success bg-opacity-10 text-success px-3">Produits distincts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Table -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <ul class="nav nav-pills mb-4" id="entrepotTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active rounded-pill px-4" id="stock-tab" data-bs-toggle="pill" data-bs-target="#stock">
+                            <i class="bi bi-box me-2"></i>Stock Actuel
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link rounded-pill px-4" id="empl-tab" data-bs-toggle="pill" data-bs-target="#empl">
+                            <i class="bi bi-geo me-2"></i>Configuration Emplacements
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="stock">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th>Emplacement</th>
+                                        <th class="text-center">Quantité</th>
+                                        <th>Dernière Mise à Jour</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for s in stocks %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ s.produit.nom }}</div>
+                                            <small class="text-muted">{{ s.produit.code }}</small>
+                                        </td>
+                                        <td><span class="badge bg-secondary">{{ s.emplacement.code }}</span></td>
+                                        <td class="text-center fw-bold">{{ s.quantite }}</td>
+                                        <td>{{ s.updated_at|date:"d/m/Y H:i" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted py-4">Aucun stock répertorié dans cet entrepôt.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="empl">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6>Zones et Emplacements</h6>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addEmplModal">
+                                <i class="bi bi-plus-lg me-1"></i>Ajouter une Zone
+                            </button>
+                        </div>
+                        <div class="row row-cols-2 row-cols-md-4 g-3">
+                            {% for e in emplacements %}
+                            <div class="col">
+                                <div class="p-3 border rounded-3 bg-light text-center">
+                                    <div class="fw-bold fs-5">{{ e.code }}</div>
+                                    <small class="text-muted">{{ e.description }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for adding emplacement -->
+<div class="modal fade" id="addEmplModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="#">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_emplacement">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Nouvelle Zone / Emplacement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Code (ex: ZONE-A-1)</label>
+                    <input type="text" name="code" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">Créer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

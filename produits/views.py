@@ -5,6 +5,7 @@ from django.db.models import Q, F
 from django.core.paginator import Paginator
 from .models import Produit, Categorie, MouvementStock
 from .forms import ProduitForm, MouvementForm
+from .serializers import ProduitSerializer
 
 
 @login_required
@@ -99,3 +100,87 @@ def mouvement(request, pk):
         messages.success(request, 'Mouvement enregistré!')
         return redirect('produits:detail', pk=pk)
     return render(request, 'produits/mouvement.html', {'form': form, 'produit': produit})
+
+# ─────────────────────────────────────────────────────────────
+# Module 5: Barcode & Scanner
+# ─────────────────────────────────────────────────────────────
+
+@login_required
+def print_labels(request):
+    produits = Produit.objects.filter(actif=True).order_by('nom')
+    if request.method == 'POST':
+        p_ids = request.POST.getlist('produits')
+        if not p_ids:
+            messages.error(request, "Veuillez sélectionner au moins un produit.")
+            return render(request, 'produits/etiquettes_select.html', {'produits': produits})
+        selected_produits = Produit.objects.filter(id__in=p_ids)
+        return render(request, 'produits/etiquettes_print.html', {'produits': selected_produits})
+    return render(request, 'produits/etiquettes_select.html', {'produits': produits})
+
+@login_required
+def scanner(request):
+    return render(request, 'produits/scanner.html')
+
+from django.http import JsonResponse
+import json
+
+@login_required
+def api_scanner_mouvement(request):
+    """API endpoint for the fast browser scanner."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            code = data.get('code')
+            action = data.get('action') # 'entree' or 'sortie'
+            quantite = int(data.get('quantite', 1))
+            
+            if not code or action not in ['entree', 'sortie']:
+                return JsonResponse({'success': False, 'error': 'Données invalides.'})
+                
+            produit = Produit.objects.filter(Q(code_barre=code) | Q(code=code)).first()
+            if not produit:
+                return JsonResponse({'success': False, 'error': f'Produit avec le code {code} introuvable.'})
+                
+            if action == 'sortie' and produit.stock_actuel < quantite:
+                return JsonResponse({'success': False, 'error': f'Stock insuffisant pour {produit.nom}. Disponible: {produit.stock_actuel}'})
+                
+            # Perform movement
+            stock_avant = produit.stock_actuel
+            if action == 'entree':
+                produit.stock_actuel += quantite
+            elif action == 'sortie':
+                produit.stock_actuel -= quantite
+                
+            m = MouvementStock(
+                produit=produit,
+                utilisateur=request.user,
+                type_mouvement=action,
+                quantite=quantite,
+                stock_avant=stock_avant,
+                stock_apres=produit.stock_actuel,
+                motif="Scan Rapide (Browser)"
+            )
+            produit.save()
+            m.save()
+            
+            serializer = ProduitSerializer(produit, context={'request': request})
+            
+            return JsonResponse({
+                'success': True,
+                'produit': serializer.data,
+                'action_label': "Ajouté" if action == 'entree' else "Retiré",
+                'quantite': quantite,
+                'nouveau_stock': produit.stock_actuel
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Method Not Allowed.'}, status=405)
+
+@login_required
+def regenerate_qr_code(request, pk):
+    """View to manually trigger QR code regeneration."""
+    produit = get_object_or_404(Produit, pk=pk)
+    produit.generate_qr_code()
+    messages.success(request, f"Code QR régénéré pour {produit.nom}")
+    return redirect('produits:detail', pk=pk)

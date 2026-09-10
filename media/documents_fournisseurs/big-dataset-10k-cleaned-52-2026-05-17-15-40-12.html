@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dataset report — big_dataset_10k-cleaned</title>
+  <style>
+  body { font-family: system-ui, Segoe UI, Roboto, sans-serif; margin: 24px; color: #111; line-height: 1.45; }
+  h1 { font-size: 1.6rem; margin-bottom: 0.35rem; }
+  h2 { font-size: 1.25rem; margin-top: 2rem; margin-bottom: 0.5rem; page-break-after: avoid; }
+  h3 { font-size: 1.1rem; margin-top: 0; margin-bottom: 0.35rem; }
+  h4 { font-size: 0.95rem; margin: 1rem 0 0.4rem; page-break-after: avoid; }
+  .meta, .muted { color: #555; font-size: 0.875rem; }
+  .muted { margin: 0.25rem 0; }
+  .small { font-size: 0.8rem; }
+  .dataset-section {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 1.75rem;
+    page-break-inside: avoid;
+  }
+  .share-box { background: #f8f9fb; padding: 12px 14px; border-radius: 6px; margin: 12px 0; border: 1px solid #e2e6ee; }
+  .share-box ul { margin: 0.35rem 0 0 1.1rem; }
+  .share-box a { color: #0b57d0; }
+  .metrics { font-size: 0.9rem; margin: 0.5rem 0 1rem; }
+  ul.insights { margin: 0.25rem 0 0.75rem 1.2rem; }
+  .charts { display: flex; flex-direction: column; gap: 1rem; }
+  .chart-block { page-break-inside: avoid; }
+  .chart-kind { margin: 0 0 0.35rem; font-size: 0.85rem; }
+  .note { font-size: 0.8rem; color: #666; margin: 0.35rem 0 0; }
+  table.data-grid, table.summary { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0.35rem 0 1rem; }
+  table.data-grid th, table.data-grid td, table.summary th, table.summary td {
+    border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top;
+  }
+  table.data-grid th, table.summary th { background: #f0f0f0; font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  code { font-size: 0.85em; background: #eee; padding: 0 4px; border-radius: 3px; }
+  @media print {
+    body { margin: 10px; }
+    a { color: #000; text-decoration: underline; }
+    .print-hide { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <h1>Dataset report — big_dataset_10k-cleaned</h1>
+    
+  </div>
+  <p class="meta">Generated: 17/05/2026 16:40:12</p>
+
+  <section class="dataset-section" id="export-dataset-52">
+    <h2>big_dataset_10k-cleaned</h2>
+    <p class="meta">ID 52 · CSV · 1 000 rows · uploaded 17 mai 2026, 10:26</p>
+    <p class="meta">No description</p>
+    
+  <div class="share-box">
+    <h4>Share &amp; open in app</h4>
+    <ul>
+      <li><a href="http://localhost:3000/dashboard/datasets">All datasets</a></li>
+      <li><a href="http://localhost:3000/dashboard/datasets#dataset-52">Jump to this dataset (opens auto insights)</a> — uses <code>#dataset-52</code></li>
+    </ul>
+    <p class="muted small">Dashboard public sharing (if enabled) is managed from each dashboard’s share action in the app.</p>
+  </div>
+    <h3>Auto analysis snapshot</h3>
+    <p class="metrics">Rows: <strong>1 000</strong> · Columns: <strong>8</strong> · Duplicate rows: <strong>0</strong></p>
+  <h4>Column profiles</h4>
+  <table class="data-grid">
+    <thead><tr><th>Column</th><th>Type</th><th>Null %</th><th>Distinct</th></tr></thead>
+    <tbody><tr><td>id</td><td>number</td><td class="num">0</td><td class="num">1000</td></tr><tr><td>age</td><td>number</td><td class="num">0</td><td class="num">36</td></tr><tr><td>city</td><td>text</td><td class="num">0</td><td class="num">8</td></tr><tr><td>name</td><td>text</td><td class="num">0</td><td class="num">224</td></tr><tr><td>salary</td><td>number</td><td class="num">0</td><td class="num">974</td></tr><tr><td>country</td><td>text</td><td class="num">0</td><td class="num">1</td></tr><tr><td>join_date</td><td>datetime</td><td class="num">0</td><td class="num">841</td></tr><tr><td>department</td><td>text</td><td class="num">0</td><td class="num">8</td></tr></tbody>
+  </table><h4>Key insights</h4><ul class="insights"><li>The dataset has 1,000 rows and 8 columns.</li><li>Detected 3 numeric, 1 date/time, and 4 text columns.</li><li>A line chart was generated: id over time (join_date).</li></ul><h4>Charts (data tables)</h4><div class="charts">
+  <div class="chart-block">
+    <h4>id over time (join_date)</h4>
+    <p class="chart-kind"><strong>line</strong> (tabular export)</p><table class="data-grid"><thead><tr><th>x</th><th>y</th></tr></thead><tbody><tr><td>2025-09-16T00:00:00</td><td>428</td></tr><tr><td>2025-09-19T00:00:00</td><td>384</td></tr><tr><td>2025-09-24T00:00:00</td><td>502</td></tr><tr><td>2025-09-29T00:00:00</td><td>249</td></tr><tr><td>2025-10-05T00:00:00</td><td>699</td></tr><tr><td>2025-10-06T00:00:00</td><td>836</td></tr><tr><td>2025-10-13T00:00:00</td><td>345</td></tr><tr><td>2025-10-18T00:00:00</td><td>493</td></tr><tr><td>2025-10-20T00:00:00</td><td>794</td></tr><tr><td>2025-10-21T00:00:00</td><td>408</td></tr><tr><td>2025-10-28T00:00:00</td><td>894</td></tr><tr><td>2025-10-30T00:00:00</td><td>811</td></tr><tr><td>2025-11-01T00:00:00</td><td>731</td></tr><tr><td>2025-11-02T00:00:00</td><td>310</td></tr><tr><td>2025-11-03T00:00:00</td><td>893</td></tr><tr><td>2025-11-07T00:00:00</td><td>28</td></tr><tr><td>2025-11-15T00:00:00</td><td>24</td></tr><tr><td>2025-11-19T00:00:00</td><td>386</td></tr><tr><td>2025-11-25T00:00:00</td><td>68</td></tr><tr><td>2025-11-30T00:00:00</td><td>85</td></tr><tr><td>2025-12-06T00:00:00</td><td>284</td></tr><tr><td>2025-12-14T00:00:00</td><td>668</td></tr><tr><td>2025-12-15T00:00:00</td><td>496</td></tr><tr><td>2025-12-16T00:00:00</td><td>64</td></tr><tr><td>2025-12-17T00:00:00</td><td>304</td></tr><tr><td>2025-12-19T00:00:00</td><td>847</td></tr><tr><td>2025-12-20T00:00:00</td><td>825</td></tr><tr><td>2025-12-22T00:00:00</td><td>913</td></tr><tr><td>2025-12-23T00:00:00</td><td>503</td></tr><tr><td>2025-12-29T00:00:00</td><td>436</td></tr></tbody></table>
+    
+  </div>
+  <div class="chart-block">
+    <h4>id by city</h4>
+    <p class="chart-kind"><strong>bar</strong> (tabular export)</p><table class="data-grid"><thead><tr><th>value</th><th>category</th></tr></thead><tbody><tr><td>70058</td><td>Agadir</td></tr><tr><td>68898</td><td>Oujda</td></tr><tr><td>66341</td><td>Rabat</td></tr><tr><td>62756</td><td>Kenitra</td></tr><tr><td>62529</td><td>Tangier</td></tr><tr><td>62211</td><td>Fes</td></tr><tr><td>61359</td><td>Casablanca</td></tr><tr><td>46348</td><td>Marrakech</td></tr></tbody></table>
+    
+  </div>
+  <div class="chart-block">
+    <h4>Preview (sample rows)</h4>
+    <table class="data-grid"><thead><tr><th>id</th><th>age</th><th>city</th><th>name</th><th>salary</th><th>country</th><th>join_date</th><th>department</th></tr></thead><tbody><tr><td>1</td><td>55</td><td>Agadir</td><td>Omar Kabbaj</td><td>7043</td><td>Morocco</td><td>2025-05-20</td><td>Sales</td></tr><tr><td>2</td><td>34</td><td>Marrakech</td><td>Hassan Fassi</td><td>10706</td><td>Morocco</td><td>2023-10-01</td><td>Support</td></tr><tr><td>3</td><td>52</td><td>Kenitra</td><td>Lina Haddad</td><td>17638</td><td>Morocco</td><td>2021-05-27</td><td>Engineering</td></tr><tr><td>4</td><td>35</td><td>Casablanca</td><td>Sara Alaoui</td><td>18999</td><td>Morocco</td><td>2022-07-08</td><td>Management</td></tr><tr><td>5</td><td>34</td><td>Fes</td><td>Imane Mernissi</td><td>11621</td><td>Morocco</td><td>2021-06-06</td><td>Management</td></tr><tr><td>6</td><td>26</td><td>Marrakech</td><td>Yasin Rifi</td><td>6610</td><td>Morocco</td><td>2020-10-13</td><td>Marketing</td></tr><tr><td>7</td><td>22</td><td>Kenitra</td><td>Khadija Boulahya</td><td>4830</td><td>Morocco</td><td>2018-09-08</td><td>Engineering</td></tr><tr><td>8</td><td>43</td><td>Tangier</td><td>Amine Kabbaj</td><td>17822</td><td>Morocco</td><td>2022-09-19</td><td>Sales</td></tr><tr><td>9</td><td>42</td><td>Tangier</td><td>Hassan Zahir</td><td>19878</td><td>Morocco</td><td>2018-05-01</td><td>Engineering</td></tr><tr><td>10</td><td>49</td><td>Agadir</td><td>Hassan Benali</td><td>11182</td><td>Morocco</td><td>2020-08-07</td><td>Sales</td></tr><tr><td>11</td><td>24</td><td>Marrakech</td><td>Alice Chafik</td><td>18508</td><td>Morocco</td><td>2025-07-24</td><td>Design</td></tr><tr><td>12</td><td>48</td><td>Casablanca</td><td>Alice El Amrani</td><td>17450</td><td>Morocco</td><td>2018-06-23</td><td>HR</td></tr><tr><td>13</td><td>48</td><td>Casablanca</td><td>Salma Kabbaj</td><td>18621</td><td>Morocco</td><td>2021-09-07</td><td>Marketing</td></tr><tr><td>14</td><td>37</td><td>Marrakech</td><td>Sara Zahir</td><td>18490</td><td>Morocco</td><td>2019-06-21</td><td>Management</td></tr><tr><td>15</td><td>36</td><td>Agadir</td><td>Mehdi Mernissi</td><td>13031</td><td>Morocco</td><td>2020-09-04</td><td>Finance</td></tr></tbody></table>
+    
+  </div></div>
+  </section>
+
+  <p class="meta" style="margin-top:20px;border-top:1px solid #ddd;padding-top:8px;">
+    Export date: 17/05/2026 16:40:12
+  </p>
+</body>
+</html>

@@ -1,0 +1,73 @@
+{% extends "core/base.html" %}
+
+{% block title %}Impression d'Étiquettes | Dépôt Manager{% endblock %}
+{% block page_title %}Générateur d'Étiquettes Code-Barres{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+        <h4 class="mb-4 text-primary"><i class="bi bi-tags me-2"></i>Sélectionner les produits à imprimer</h4>
+        
+        <form method="post" action="{% url 'produits:print_labels' %}">
+            {% csrf_token %}
+            <div class="table-responsive mb-4" style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th style="width: 50px;">
+                                <input class="form-check-input" type="checkbox" id="selectAll">
+                            </th>
+                            <th>Code</th>
+                            <th>Nom du Produit</th>
+                            <th>Code Barre Actuel</th>
+                            <th>Prix (MAD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in produits %}
+                        <tr>
+                            <td>
+                                <input class="form-check-input prod-checkbox" type="checkbox" name="produits" value="{{ p.id }}">
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ p.code }}</span></td>
+                            <td class="fw-semibold">{{ p.nom }}</td>
+                            <td class="text-muted">{{ p.code_barre|default:"Généré via code" }}</td>
+                            <td>{{ p.prix_vente|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted" id="selectedCount">0 produit(s) sélectionné(s)</span>
+                <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                    <i class="bi bi-printer me-2"></i>Générer les Étiquettes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.prod-checkbox');
+    const countDisplay = document.getElementById('selectedCount');
+    
+    function updateCount() {
+        const count = document.querySelectorAll('.prod-checkbox:checked').length;
+        countDisplay.textContent = `${count} produit(s) sélectionné(s)`;
+    }
+    
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        updateCount();
+    });
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateCount);
+    });
+});
+</script>
+{% endblock %}

@@ -278,14 +278,28 @@
     </a>
 
     <div class="sidebar-section">Stock</div>
-    <a href="{% url 'produits:liste' %}" class="nav-link {% if request.resolver_match.app_name == 'produits' %}active{% endif %}">
+    <a href="{% url 'produits:liste' %}" class="nav-link {% if request.resolver_match.app_name == 'produits' and request.resolver_match.url_name == 'liste' %}active{% endif %}">
         <i class="bi bi-box-seam"></i> <span>Produits</span>
+    </a>
+    <a href="{% url 'produits:scanner' %}" class="nav-link {% if request.resolver_match.app_name == 'produits' and request.resolver_match.url_name == 'scanner' %}active{% endif %}">
+        <i class="bi bi-upc-scan" style="color:#0ea5e9;"></i> <span>Scanner Code-Barre</span>
+    </a>
+    <a href="{% url 'produits:print_labels' %}" class="nav-link {% if request.resolver_match.app_name == 'produits' and request.resolver_match.url_name == 'print_labels' %}active{% endif %}">
+        <i class="bi bi-tags" style="color:#10b981;"></i> <span>Imprimer Étiquettes</span>
     </a>
     <a href="{% url 'fournisseurs:liste' %}" class="nav-link {% if request.resolver_match.app_name == 'fournisseurs' %}active{% endif %}">
         <i class="bi bi-truck"></i> <span>Fournisseurs</span>
     </a>
     <a href="{% url 'commandes:liste' %}" class="nav-link {% if request.resolver_match.app_name == 'commandes' %}active{% endif %}">
         <i class="bi bi-cart3"></i> <span>Commandes</span>
+    </a>
+
+    <div class="sidebar-section">Logistique</div>
+    <a href="{% url 'logistique:entrepot_liste' %}" class="nav-link {% if request.resolver_match.app_name == 'logistique' and 'entrepot' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="bi bi-building"></i> <span>Entrepôts</span>
+    </a>
+    <a href="{% url 'logistique:transfert_liste' %}" class="nav-link {% if request.resolver_match.app_name == 'logistique' and 'transfert' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="bi bi-arrow-left-right"></i> <span>Transferts</span>
     </a>
 
     <div class="sidebar-section">CRM</div>
@@ -297,8 +311,11 @@
     </a>
 
     <div class="sidebar-section">Admin</div>
-    <a href="{% url 'employes:liste' %}" class="nav-link {% if request.resolver_match.app_name == 'employes' %}active{% endif %}">
+    <a href="{% url 'employes:liste' %}" class="nav-link {% if request.resolver_match.app_name == 'employes' and request.resolver_match.url_name == 'liste' %}active{% endif %}">
         <i class="bi bi-person-badge"></i> <span>Employés</span>
+    </a>
+    <a href="{% url 'employes:performance' %}" class="nav-link {% if request.resolver_match.app_name == 'employes' and request.resolver_match.url_name == 'performance' %}active{% endif %}">
+        <i class="bi bi-person-workspace" style="color:#f43f5e;"></i> <span>Performance Employés</span>
     </a>
     <a href="{% url 'rapports:dashboard' %}" class="nav-link {% if request.resolver_match.app_name == 'rapports' %}active{% endif %}">
         <i class="bi bi-bar-chart-line"></i> <span>Rapports</span>
@@ -306,6 +323,30 @@
     <a href="{% url 'alertes:liste' %}" class="nav-link {% if request.resolver_match.app_name == 'alertes' %}active{% endif %}">
         <i class="bi bi-bell"></i> <span>Alertes</span>
         {% if alertes_non_lues %}<span class="sidebar-badge">{{ alertes_non_lues }}</span>{% endif %}
+    </a>
+
+    <div class="sidebar-section">Intelligence IA</div>
+    <a href="{% url 'ai_assistant:chatbot' %}" class="nav-link {% if request.resolver_match.app_name == 'ai_assistant' and request.resolver_match.url_name == 'chatbot' %}active{% endif %}"
+       style="position:relative;overflow:visible">
+        <i class="bi bi-robot" style="color:#a855f7"></i>
+        <span>Assistant IA</span>
+        <span style="margin-left:auto;font-size:9px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;padding:2px 7px;border-radius:999px;font-weight:600">NOUVEAU</span>
+    </a>
+    <a href="{% url 'ai_assistant:forecast' %}" class="nav-link {% if request.resolver_match.app_name == 'ai_assistant' and request.resolver_match.url_name == 'forecast' %}active{% endif %}"
+       style="position:relative;overflow:visible">
+        <i class="bi bi-graph-up-arrow" style="color:#0ea5e9"></i>
+        <span>Prévision Demande</span>
+    </a>
+   
+    <a href="{% url 'ai_assistant:analytics' %}" class="nav-link {% if request.resolver_match.app_name == 'ai_assistant' and request.resolver_match.url_name == 'analytics' %}active{% endif %}"
+       style="position:relative;overflow:visible">
+        <i class="bi bi-pie-chart" style="color:#10b981"></i>
+        <span>Analyses Avancées</span>
+    </a>
+    <a href="{% url 'ai_assistant:alert_rules' %}" class="nav-link {% if request.resolver_match.app_name == 'ai_assistant' and request.resolver_match.url_name == 'alert_rules' %}active{% endif %}"
+       style="position:relative;overflow:visible">
+        <i class="bi bi-shield-exclamation" style="color:#ef4444"></i>
+        <span>Règles d'Alertes</span>
     </a>
 
     <div class="sidebar-section">Système</div>
@@ -387,6 +428,24 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Floating AI Chat Button -->
+<a href="{% url 'ai_assistant:chatbot' %}" id="floatingChatBtn" title="Assistant IA"
+   style="
+     position:fixed; bottom:28px; right:28px; z-index:9999;
+     width:54px; height:54px;
+     background:linear-gradient(135deg,#7c3aed,#a855f7);
+     border-radius:16px;
+     display:flex; align-items:center; justify-content:center;
+     color:#fff; font-size:24px;
+     box-shadow: 0 8px 28px rgba(124,58,237,.45);
+     text-decoration:none;
+     transition: transform .2s, box-shadow .2s;
+   "
+   onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 12px 36px rgba(124,58,237,.6)';"
+   onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 8px 28px rgba(124,58,237,.45)';">
+  <i class="bi bi-robot"></i>
+</a>
 
 <script>
 function toggleSidebar() {

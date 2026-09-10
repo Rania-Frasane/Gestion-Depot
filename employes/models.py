@@ -25,6 +25,8 @@ class Employe(models.Model):
     salaire = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     adresse = models.TextField(blank=True)
     cin = models.CharField(max_length=20, blank=True, verbose_name='CIN')
+    photo = models.ImageField(upload_to='employes/', null=True, blank=True)
+    avatar_type = models.CharField(max_length=50, default='default')
     actif = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

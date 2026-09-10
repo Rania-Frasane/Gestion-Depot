@@ -15,4 +15,6 @@ urlpatterns = [
     path('rapports/', include('rapports.urls', namespace='rapports')),
     path('facturation/', include('facturation.urls', namespace='facturation')),
     path('alertes/', include('alertes.urls', namespace='alertes')),
+    path('logistique/', include('logistique.urls', namespace='logistique')),
+    path('api/', include('api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

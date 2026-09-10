@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+
+{% block title %}Modifier Transfert {{ transfert.numero }} | Dépôt Manager{% endblock %}
+{% block page_title %}Ajout de Produits au Transfert : {{ transfert.numero }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h6 class="card-title mb-4">Produits dans ce transfert</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produit</th>
+                                <th class="text-center">Quantité</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for line in transfert.lignes.all %}
+                            <tr>
+                                <td>{{ line.produit.nom }}</td>
+                                <td class="text-center fw-bold">{{ line.quantite }}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-4">Aucun produit ajouté.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4 d-flex justify-content-between">
+                    <a href="{% url 'logistique:transfert_liste' %}" class="btn btn-light">Retour à la liste</a>
+                    {% if transfert.lignes.exists %}
+                    <a href="{% url 'logistique:transfert_valider' transfert.pk %}" class="btn btn-success px-4 fw-bold">
+                        <i class="bi bi-send me-2"></i>Expédier le transfert
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px;">
+            <div class="card-body p-4">
+                <h6 class="card-title mb-3">Ajouter un Produit</h6>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Produit</label>
+                        <select name="produit" class="form-select select2" required>
+                            <option value="">Sélectionner...</option>
+                            {% for p in produits %}
+                            <option value="{{ p.id }}">{{ p.nom }} ({{ p.code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Quantité</label>
+                        <input type="number" name="quantite" class="form-control" min="1" value="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">
+                        <i class="bi bi-plus-lg me-1"></i>Ajouter au transfert
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

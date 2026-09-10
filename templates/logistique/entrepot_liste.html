@@ -1,0 +1,81 @@
+{% extends "core/base.html" %}
+
+{% block title %}Entrepôts | Dépôt Manager{% endblock %}
+{% block page_title %}Gestion des Entrepôts{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title mb-0"><i class="bi bi-building me-2"></i>Liste des Entrepôts</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEntrepotModal">
+                        <i class="bi bi-plus-lg me-2"></i>Nouvel Entrepôt
+                    </button>
+                </div>
+                
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for ent in entrepots %}
+                    <div class="col">
+                        <div class="card h-100 border rounded-4 hover-shadow transition">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                        <i class="bi bi-building text-primary fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ ent.nom }}</h6>
+                                        <small class="text-muted">{{ ent.ville }}</small>
+                                    </div>
+                                </div>
+                                <p class="card-text small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ ent.adresse|truncatechars:50 }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <span class="badge {% if ent.actif %}bg-success{% else %}bg-danger{% endif %} bg-opacity-10 text-{% if ent.actif %}success{% else %}danger{% endif %} border-0 px-3">
+                                        {% if ent.actif %}Actif{% else %}Inactif{% endif %}
+                                    </span>
+                                    <a href="{% url 'logistique:entrepot_detail' ent.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        Détails <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for adding entrepot (simple version) -->
+<div class="modal fade" id="addEntrepotModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post">
+            {% csrf_token %}
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Ajouter un Entrepôt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="nom" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ville</label>
+                    <input type="text" name="ville" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Adresse</label>
+                    <textarea name="adresse" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
